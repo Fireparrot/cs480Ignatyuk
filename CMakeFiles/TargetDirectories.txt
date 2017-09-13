@@ -1,0 +1,4 @@
+/home/fireparrot/Desktop/CS480_2/build/CMakeFiles/edit_cache.dir
+/home/fireparrot/Desktop/CS480_2/build/CMakeFiles/Tutorial_SUCCESSFUL.dir
+/home/fireparrot/Desktop/CS480_2/build/CMakeFiles/rebuild_cache.dir
+/home/fireparrot/Desktop/CS480_2/build/CMakeFiles/Tutorial.dir
