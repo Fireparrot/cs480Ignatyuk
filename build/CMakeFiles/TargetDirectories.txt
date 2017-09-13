@@ -1,4 +1,0 @@
-/home/fireparrot/Desktop/CS480_1/computer-graphics/PA1/build/CMakeFiles/edit_cache.dir
-/home/fireparrot/Desktop/CS480_1/computer-graphics/PA1/build/CMakeFiles/Tutorial_SUCCESSFUL.dir
-/home/fireparrot/Desktop/CS480_1/computer-graphics/PA1/build/CMakeFiles/rebuild_cache.dir
-/home/fireparrot/Desktop/CS480_1/computer-graphics/PA1/build/CMakeFiles/Tutorial.dir
