@@ -9,27 +9,27 @@ using namespace std;
 #include "shader.h"
 #include "object.h"
 
-class Graphics
-{
-  public:
+class Graphics {
+public:
     Graphics();
     ~Graphics();
     bool Initialize(int width, int height);
     void Update(unsigned int dt);
     void Render();
     
-    float rotation;        //I would make it private, but there is no point
-  private:
+    float rotation, orbit;
+private:
     std::string ErrorString(GLenum error);
 
-    Camera *m_camera;
-    Shader *m_shader;
+    Camera * m_camera;
+    Shader * m_shader;
 
     GLint m_projectionMatrix;
     GLint m_viewMatrix;
     GLint m_modelMatrix;
 
-    Object *m_cube;
+    Object * m_objects[2];
+    float a00, a01, a10, a11;
 };
 
 #endif /* GRAPHICS_H */

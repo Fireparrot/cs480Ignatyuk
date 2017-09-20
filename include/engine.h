@@ -7,9 +7,8 @@
 #include "window.h"
 #include "graphics.h"
 
-class Engine
-{
-  public:
+class Engine {
+public:
     Engine(string name, int width, int height);
     Engine(string name);
     ~Engine();
@@ -20,8 +19,8 @@ class Engine
     unsigned int getDT();
     long long GetCurrentTimeMillis();
   
-  private:
-    // Window related variables
+private:
+    //Window related variables
     Window *m_window;    
     string m_WINDOW_NAME;
     int m_WINDOW_WIDTH;

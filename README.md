@@ -1,4 +1,6 @@
-# PA2: Spinning Controlled Cube
+# PA3: Moon
+
+The files uploaded are for PA3
 
 # Building
 
@@ -11,7 +13,8 @@ In the folder containing the code (such as the include and src folders):
 
 # Running
 
-Running the project requires no command line arguments, nor does it give out a prompt. Simply type in "./Tutorial".
+Running the project requires no command line arguments, nor does it give out a prompt.
+Simply type in "./PA3".
 
 # Libraries
 
@@ -21,13 +24,13 @@ No libraries other than the standard -- GLM, GLEW and SDL -- are needed.
 
 ## Keyboard
 
-Left key: make cube orbit counterclockwise.
-Right key: make cube orbit clockwise.
-Up key: make cube orbit the other way (if orbitting).
-Down key: make cube not orbit.
+Left key: make Planet cube orbit counterclockwise.
+Right key: make Planet cube orbit clockwise.
+Up key: make Planet cube orbit the other way (if orbitting).
+Down key: make Planet cube not orbit.
 
 ## Mouse
 
-Left button: if already orbitting counterclockwise, stop; otherwise, orbit counterclockwise.
-Right button: if already orbitting clockwise, stop; otherwise, orbit clockwise.
+Left button: if Planet cube is already rotating counterclockwise, stop; otherwise, rotate counterclockwise.
+Right button: if Planet cube is already rotating clockwise, stop; otherwise, rotate clockwise.
 

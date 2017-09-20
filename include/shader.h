@@ -5,9 +5,8 @@
 
 #include "graphics_headers.h"
 
-class Shader
-{
-  public:
+class Shader {
+public:
     Shader();
     ~Shader();
     bool Initialize();
@@ -16,7 +15,7 @@ class Shader
     bool Finalize();
     GLint GetUniformLocation(const char* pUniformName);
 
-  private:
+private:
     GLuint m_shaderProg;    
     std::vector<GLuint> m_shaderObjList;
 };

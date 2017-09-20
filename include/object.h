@@ -4,25 +4,22 @@
 #include <vector>
 #include "graphics_headers.h"
 
-class Object
-{
-  public:
+class Object {
+public:
     Object();
     ~Object();
-    void Update(unsigned int dt, float rotation);
+    void Update(unsigned int dt);
     void Render();
 
     glm::mat4 GetModel();
+    void SetModel(const glm::mat4 & model);
 
-  private:
+private:
     glm::mat4 model;
     std::vector<Vertex> Vertices;
     std::vector<unsigned int> Indices;
     GLuint VB;
     GLuint IB;
-
-    float angle1;
-    float angle2;
 };
 
 #endif /* OBJECT_H */
