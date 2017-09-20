@@ -1,6 +1,7 @@
 # PA3: Moon
 
-The files uploaded are for PA3
+All files present are for PA3.
+Those that remain from previous projects have not been changed, thus may remain as saying that they are for those previous projects, but they are nonetheless part of PA3.
 
 # Building
 
