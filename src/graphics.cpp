@@ -43,8 +43,9 @@ bool Graphics::Initialize(int width, int height) {
     }
     
     // Create the object
-    m_objects[0] = new Object();
-    m_objects[1] = new Object();
+    m_objects[0] = new Object("bumpy_sphere.obj");
+    m_objects[1] = new Object("bumpy_sphere.obj");
+    m_objects[2] = new Object("cup2.obj");
     
     // Set up the shaders
     m_shader = new Shader();
@@ -103,6 +104,7 @@ void Graphics::Update(unsigned int dt) {
     //Update the objects
     m_objects[0]->Update(dt);
     m_objects[1]->Update(dt);
+    m_objects[2]->Update(dt);
     
     //Set the model matrices of the objects
     float baseAngle = dt * M_PI/1000;
@@ -111,16 +113,19 @@ void Graphics::Update(unsigned int dt) {
     a10 += baseAngle / 10;                      //Moon's rotation
     a11 += baseAngle / 30;                      //Moon's orbit
     
-    glm::mat4 m0, m1;
+    glm::mat4 m0, m1, m2;
     m0  = glm::translate(glm::mat4(1.0f), glm::vec3( 8.0 * cos(a01), 0.0,  8.0 * sin(a01)));
     m0 *= glm::rotate(glm::mat4(1.0f), a00, glm::vec3(0.0, 1.0, 0.0));
     m1  = glm::translate(glm::mat4(1.0f), glm::vec3( 3.0 * cos(a11), 0.0,  3.0 * sin(a11)));
     m1 *= glm::translate(glm::mat4(1.0f), glm::vec3( 8.0 * cos(a01), 0.0,  8.0 * sin(a01)));
     m1 *= glm::rotate(glm::mat4(1.0f), a10, glm::vec3(0.0, 1.0, 0.0));
     m1 *= glm::scale(glm::mat4(1.0f), glm::vec3(0.4f));
+    m2  = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -3.5f, 0.0f));
+    m2 *= glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
     
     m_objects[0]->SetModel(m0);
     m_objects[1]->SetModel(m1);
+    m_objects[2]->SetModel(m2);
 }
 
 void Graphics::Render() {
@@ -140,6 +145,8 @@ void Graphics::Render() {
     m_objects[0]->Render();
     glUniformMatrix4fv(m_modelMatrix, 1, GL_FALSE, glm::value_ptr(m_objects[1]->GetModel()));
     m_objects[1]->Render();
+    glUniformMatrix4fv(m_modelMatrix, 1, GL_FALSE, glm::value_ptr(m_objects[2]->GetModel()));
+    m_objects[2]->Render();
     
     //Get any errors from OpenGL
     auto error = glGetError();

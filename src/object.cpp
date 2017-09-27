@@ -1,6 +1,8 @@
 #include "object.h"
 
-Object::Object() {  
+#include <fstream>
+
+Object::Object(const std::string & filename) {  
     /*
     # Blender File for a Cube
     o Cube
@@ -26,7 +28,7 @@ Object::Object() {
     f 3 7 4
     f 5 1 8
     */
-    
+    /*
     Vertices = {
         {{1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, 0.0f}},
         {{1.0f, -1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}},
@@ -56,6 +58,28 @@ Object::Object() {
     // The index works at a 0th index
     for(unsigned int i = 0; i < Indices.size(); i++) {
         Indices[i] = Indices[i] - 1;
+    }
+    */
+    
+    std::ifstream file;
+    file.open("objects/" + filename);
+    if(!file.is_open()) {
+        std::cerr << "Could not open file " << filename << " to read as an .obj file!";
+    }
+    while(!file.eof()) {
+        char c;
+        file >> c;
+        if(c == 'v') {
+            float x, y, z;
+            file >> x >> y >> z;
+            Vertices.push_back({{x, y, z}, {x, y, z}});
+        } else if(c == 'f') {
+            unsigned int i0, i1, i2;
+            file >> i0 >> i1 >> i2;
+            Indices.push_back(i0-1);
+            Indices.push_back(i1-1);
+            Indices.push_back(i2-1);
+        } else {while(c != '\n') {file >> c;}}
     }
     
     glGenBuffers(1, &VB);

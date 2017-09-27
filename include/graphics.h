@@ -28,7 +28,7 @@ private:
     GLint m_viewMatrix;
     GLint m_modelMatrix;
 
-    Object * m_objects[2];
+    Object * m_objects[3];
     float a00, a01, a10, a11;
 };
 
