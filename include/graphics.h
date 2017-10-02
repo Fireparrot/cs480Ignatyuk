@@ -5,7 +5,7 @@
 using namespace std;
 
 #include "graphics_headers.h"
-#include "camera.h"
+#include "cam.h"
 #include "shader.h"
 #include "object.h"
 
@@ -21,7 +21,7 @@ public:
 private:
     std::string ErrorString(GLenum error);
 
-    Camera * m_camera;
+    Cam * m_camera;
     Shader * m_shader;
 
     GLint m_projectionMatrix;

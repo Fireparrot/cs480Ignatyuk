@@ -1,10 +1,10 @@
-#include "camera.h"
+#include "cam.h"
 
-Camera::Camera() {}
+Cam::Cam() {}
 
-Camera::~Camera() {}
+Cam::~Cam() {}
 
-bool Camera::Initialize(int w, int h) {
+bool Cam::Initialize(int w, int h) {
     //--Init the view and projection matrices
     //  if you will be having a moving camera the view matrix will need to more dynamic
     //  ...Like you should update it before you render more dynamic 
@@ -20,11 +20,11 @@ bool Camera::Initialize(int w, int h) {
     return true;
 }
 
-glm::mat4 Camera::GetProjection() {
+glm::mat4 Cam::GetProjection() {
   return projection;
 }
 
-glm::mat4 Camera::GetView() {
+glm::mat4 Cam::GetView() {
   return view;
 }
 

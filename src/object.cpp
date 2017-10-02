@@ -2,84 +2,19 @@
 
 #include <fstream>
 
-Object::Object(const std::string & filename) {  
-    /*
-    # Blender File for a Cube
-    o Cube
-    v 1.000000 -1.000000 -1.000000
-    v 1.000000 -1.000000 1.000000
-    v -1.000000 -1.000000 1.000000
-    v -1.000000 -1.000000 -1.000000
-    v 1.000000 1.000000 -0.999999
-    v 0.999999 1.000000 1.000001
-    v -1.000000 1.000000 1.000000
-    v -1.000000 1.000000 -1.000000
-    s off
-    f 2 3 4
-    f 8 7 6
-    f 1 5 6
-    f 2 6 7
-    f 7 8 4
-    f 1 4 8
-    f 1 2 4
-    f 5 8 6
-    f 2 1 6
-    f 3 2 7
-    f 3 7 4
-    f 5 1 8
-    */
-    /*
-    Vertices = {
-        {{1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, 0.0f}},
-        {{1.0f, -1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}},
-        {{-1.0f, -1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}},
-        {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, 1.0f}},
-        {{1.0f, 1.0f, -1.0f}, {1.0f, 1.0f, 0.0f}},
-        {{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 1.0f}},
-        {{-1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 1.0f}},
-        {{-1.0f, 1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}}
-    };
-
-    Indices = {
-        2, 3, 4,
-        8, 7, 6,
-        1, 5, 6,
-        2, 6, 7,
-        7, 8, 4,
-        1, 4, 8,
-        1, 2, 4,
-        5, 8, 6,
-        2, 1, 6,
-        3, 2, 7,
-        3, 7, 4,
-        5, 1, 8
-    };
+Object::Object(const std::string & filename) {
+    Assimp::Importer importer;
+    scene = importer.ReadFile("objects/" + filename, aiProcess_Triangulate);
     
-    // The index works at a 0th index
-    for(unsigned int i = 0; i < Indices.size(); i++) {
-        Indices[i] = Indices[i] - 1;
+    for(unsigned int i = 0; i < scene->mMeshes[0]->mNumVertices; ++i) {
+        const aiVector3D & vert = scene->mMeshes[0]->mVertices[i];
+        Vertices.push_back(Vertex{{vert.x, vert.y, vert.z}, {vert.x, vert.y, vert.z}});
     }
-    */
-    
-    std::ifstream file;
-    file.open("objects/" + filename);
-    if(!file.is_open()) {
-        std::cerr << "Could not open file " << filename << " to read as an .obj file!";
-    }
-    while(!file.eof()) {
-        char c;
-        file >> c;
-        if(c == 'v') {
-            float x, y, z;
-            file >> x >> y >> z;
-            Vertices.push_back({{x, y, z}, {x, y, z}});
-        } else if(c == 'f') {
-            unsigned int i0, i1, i2;
-            file >> i0 >> i1 >> i2;
-            Indices.push_back(i0-1);
-            Indices.push_back(i1-1);
-            Indices.push_back(i2-1);
-        } else {while(c != '\n') {file >> c;}}
+    for(unsigned int i = 0; i < scene->mMeshes[0]->mNumFaces; ++i) {
+        const aiFace & face = scene->mMeshes[0]->mFaces[i];
+        Indices.push_back(face.mIndices[0]);
+        Indices.push_back(face.mIndices[1]);
+        Indices.push_back(face.mIndices[2]);
     }
     
     glGenBuffers(1, &VB);
@@ -94,17 +29,10 @@ Object::Object(const std::string & filename) {
 Object::~Object() {
     Vertices.clear();
     Indices.clear();
+    delete scene;
 }
 
-void Object::Update(unsigned int dt) {
-    /*
-    angle1 += dt * rotation * M_PI/1000;
-    angle2 += dt * M_PI/1000;
-    model = glm::rotate(glm::mat4(1.0f), (angle1/10), glm::vec3(0.0, 1.0, 0.0));
-    model *= glm::translate(glm::mat4(1.0f), glm::vec3(10.0, 0.0, 0.0));
-    model *= glm::rotate(glm::mat4(1.0f), (angle2), glm::vec3(0.0, 1.0, 0.0));
-    */
-}
+void Object::Update(unsigned int dt) {}
 
 glm::mat4 Object::GetModel() {
     return model;

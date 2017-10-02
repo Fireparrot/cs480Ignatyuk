@@ -36,7 +36,7 @@ bool Graphics::Initialize(int width, int height) {
     glBindVertexArray(vao);
     
     // Init Camera
-    m_camera = new Camera();
+    m_camera = new Cam();
     if(!m_camera->Initialize(width, height)) {
         printf("Camera Failed to Initialize\n");
         return false;
