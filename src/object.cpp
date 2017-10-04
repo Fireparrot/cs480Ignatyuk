@@ -6,15 +6,17 @@ Object::Object(const std::string & filename) {
     Assimp::Importer importer;
     scene = importer.ReadFile("objects/" + filename, aiProcess_Triangulate);
     
-    for(unsigned int i = 0; i < scene->mMeshes[0]->mNumVertices; ++i) {
-        const aiVector3D & vert = scene->mMeshes[0]->mVertices[i];
-        Vertices.push_back(Vertex{{vert.x, vert.y, vert.z}, {vert.x, vert.y, vert.z}});
-    }
-    for(unsigned int i = 0; i < scene->mMeshes[0]->mNumFaces; ++i) {
-        const aiFace & face = scene->mMeshes[0]->mFaces[i];
-        Indices.push_back(face.mIndices[0]);
-        Indices.push_back(face.mIndices[1]);
-        Indices.push_back(face.mIndices[2]);
+    for(unsigned int m = 0; m < scene->mNumMeshes; ++m) {
+        for(unsigned int i = 0; i < scene->mMeshes[m]->mNumVertices; ++i) {
+            const aiVector3D & vert = scene->mMeshes[m]->mVertices[i];
+            Vertices.push_back(Vertex{{vert.x, vert.y, vert.z}, {vert.x, vert.y, vert.z}});
+        }
+        for(unsigned int i = 0; i < scene->mMeshes[m]->mNumFaces; ++i) {
+            const aiFace & face = scene->mMeshes[m]->mFaces[i];
+            Indices.push_back(face.mIndices[0]);
+            Indices.push_back(face.mIndices[1]);
+            Indices.push_back(face.mIndices[2]);
+        }
     }
     
     glGenBuffers(1, &VB);

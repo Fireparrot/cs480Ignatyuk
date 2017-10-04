@@ -1,17 +1,19 @@
-# PA4: Model Loading
+# PA5: Assimp Model Loading
 
-All files present are for PA4.
+Nikita Ignatyk and Roniel Padua
 
-Those that remain from previous projects have not been changed, thus may remain as saying that they are for those previous projects, but they are nonetheless part of PA4.
+# Description
 
-The models loaded are those of a cup and a bumpy sphere. The framework from PA3 was preserved, but the planet and moon are now bumpy spheres instead of cubes; there is an additional central cup.
+All files present are for PA5.
 
-I created the .obj files using a "dirty" program I wrote, therefore the files are not the best, but the important part is that they work -- and they load properly.
+Those that remain from previous projects have not been changed, thus may remain as saying that they are for those previous projects, but they are nonetheless part of PA5.
+
+The cup and bumpy sphere models were created by Nikita in a "quick and dirty" program, and the cube with holes was created by Nikita's brother in blender (sorry for offset of model's center).
 
 
 # Building
 
-In the folder containing the code (such as the include and src folders):
+In the folder containing the include, src, shaders and objects folders:
 
 0.) rm build -r
 
@@ -27,27 +29,31 @@ In the folder containing the code (such as the include and src folders):
 
 Running the project requires no command line arguments, nor does it give out a prompt.
 
-Simply type in "./PA4".
+Simply type in "./PA5".
 
 # Libraries
 
-No libraries other than the standard -- GLM, GLEW and SDL -- are needed.
+GLM, GLEW and SDL are required libraries.
+
+Furthermore, Assimp (version 3.2.0) must be installed using "sudo apt-get install libassimp-dev". This should place Assimp .h/.hpp files in /usr/include/assimp/ and libassimp.so in /usr/lib/x86_64-linux-gnu/
 
 # Controls
 
+These are here as a legacy, but they can be used to look at the "Planet" model from different angles and motions.
+
 ## Keyboard
 
-Left key: make Planet orbit counterclockwise.
+Left key: make "Planet" orbit counterclockwise.
 
-Right key: make Planet orbit clockwise.
+Right key: make "Planet" orbit clockwise.
 
-Up key: make Planet orbit the other way (if orbitting).
+Up key: make "Planet" orbit the other way (if orbitting).
 
-Down key: make Planet not orbit.
+Down key: make "Planet" not orbit.
 
 ## Mouse
 
-Left button: if Planet is already rotating counterclockwise, stop; otherwise, rotate counterclockwise.
+Left button: if "Planet" is already rotating counterclockwise, stop; otherwise, rotate counterclockwise.
 
-Right button: if Planet is already rotating clockwise, stop; otherwise, rotate clockwise.
+Right button: if "Planet" is already rotating clockwise, stop; otherwise, rotate clockwise.
 

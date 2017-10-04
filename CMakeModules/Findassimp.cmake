@@ -60,7 +60,7 @@ else(WIN32)
 
 	find_library(
 	  assimp_LIBRARIES
-	  NAMES libassimp.so.3.2.0
+	  NAMES libassimp.so
 	  PATHS /usr/lib/x86_64-linux-gnu/
 	)
 

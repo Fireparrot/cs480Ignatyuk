@@ -43,7 +43,7 @@ bool Graphics::Initialize(int width, int height) {
     }
     
     // Create the object
-    m_objects[0] = new Object("bumpy_sphere.obj");
+    m_objects[0] = new Object("Cube_attempt.obj");
     m_objects[1] = new Object("bumpy_sphere.obj");
     m_objects[2] = new Object("cup2.obj");
     
@@ -116,6 +116,7 @@ void Graphics::Update(unsigned int dt) {
     glm::mat4 m0, m1, m2;
     m0  = glm::translate(glm::mat4(1.0f), glm::vec3( 8.0 * cos(a01), 0.0,  8.0 * sin(a01)));
     m0 *= glm::rotate(glm::mat4(1.0f), a00, glm::vec3(0.0, 1.0, 0.0));
+    m0 *= glm::scale(glm::mat4(1.0f), glm::vec3(1.f));
     m1  = glm::translate(glm::mat4(1.0f), glm::vec3( 3.0 * cos(a11), 0.0,  3.0 * sin(a11)));
     m1 *= glm::translate(glm::mat4(1.0f), glm::vec3( 8.0 * cos(a01), 0.0,  8.0 * sin(a01)));
     m1 *= glm::rotate(glm::mat4(1.0f), a10, glm::vec3(0.0, 1.0, 0.0));
