@@ -29,6 +29,13 @@ bool Graphics::Initialize(int width, int height) {
             return false;
         }
     #endif
+    std::cout << "Initialized GL" << std::endl;
+    
+    ilInit();
+    //iluInit();
+    //ilutInit();
+    //ilutRenderer(ILUT_OPENGL);
+    std::cout << "Initialized devIL" << std::endl;
     
     // For OpenGL 3
     GLuint vao;
@@ -43,9 +50,9 @@ bool Graphics::Initialize(int width, int height) {
     }
     
     // Create the object
-    m_objects[0] = new Object("Cube_attempt.obj");
-    m_objects[1] = new Object("bumpy_sphere.obj");
-    m_objects[2] = new Object("cup2.obj");
+    m_objects[0] = new Object("Cube_attempt.obj", "input2.png");
+    m_objects[1] = new Object("bumpy_sphere.obj", "input2.png");
+    m_objects[2] = new Object("cup2.obj", "input2.png");
     
     // Set up the shaders
     m_shader = new Shader();
@@ -90,6 +97,12 @@ bool Graphics::Initialize(int width, int height) {
     m_modelMatrix = m_shader->GetUniformLocation("modelMatrix");
     if(m_modelMatrix == INVALID_UNIFORM_LOCATION) {
         printf("m_modelMatrix not found\n");
+        return false;
+    }
+    
+    m_tex = m_shader->GetUniformLocation("tex");
+    if(m_tex == INVALID_UNIFORM_LOCATION) {
+        printf("m_tex not found\n");
         return false;
     }
     
@@ -139,21 +152,26 @@ void Graphics::Render() {
     
     //Send in the projection and view to the shader
     glUniformMatrix4fv(m_projectionMatrix, 1, GL_FALSE, glm::value_ptr(m_camera->GetProjection())); 
-    glUniformMatrix4fv(m_viewMatrix, 1, GL_FALSE, glm::value_ptr(m_camera->GetView())); 
+    glUniformMatrix4fv(m_viewMatrix, 1, GL_FALSE, glm::value_ptr(m_camera->GetView()));
+    glActiveTexture(GL_TEXTURE0 + 0);
+    glUniform1i(m_tex, 0);
     
     //Render the objects
     glUniformMatrix4fv(m_modelMatrix, 1, GL_FALSE, glm::value_ptr(m_objects[0]->GetModel()));
+    glBindTexture(GL_TEXTURE_2D, m_objects[0]->GetTexture());
     m_objects[0]->Render();
     glUniformMatrix4fv(m_modelMatrix, 1, GL_FALSE, glm::value_ptr(m_objects[1]->GetModel()));
+    glBindTexture(GL_TEXTURE_2D, m_objects[1]->GetTexture());
     m_objects[1]->Render();
     glUniformMatrix4fv(m_modelMatrix, 1, GL_FALSE, glm::value_ptr(m_objects[2]->GetModel()));
+    glBindTexture(GL_TEXTURE_2D, m_objects[2]->GetTexture());
     m_objects[2]->Render();
     
     //Get any errors from OpenGL
     auto error = glGetError();
     if(error != GL_NO_ERROR) {
         string val = ErrorString(error);
-        std::cout<< "Error initializing OpenGL! " << error << ", " << val << std::endl;
+        std::cout<< "Error within OpenGL! " << error << ", " << val << std::endl;
     }
 }
 

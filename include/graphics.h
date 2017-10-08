@@ -2,12 +2,17 @@
 #define GRAPHICS_H
 
 #include <iostream>
-using namespace std;
 
 #include "graphics_headers.h"
 #include "cam.h"
 #include "shader.h"
 #include "object.h"
+#define ILUT_USE_OPENGL
+#include <IL/il.h>
+#include <IL/ilu.h>
+#include <IL/ilut.h>
+
+using namespace std;
 
 class Graphics {
 public:
@@ -27,6 +32,7 @@ private:
     GLint m_projectionMatrix;
     GLint m_viewMatrix;
     GLint m_modelMatrix;
+    GLint m_tex;
 
     Object * m_objects[3];
     float a00, a01, a10, a11;

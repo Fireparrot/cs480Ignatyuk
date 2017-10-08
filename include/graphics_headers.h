@@ -22,12 +22,12 @@
 
 #define INVALID_UNIFORM_LOCATION 0x7fffffff
 
-struct Vertex
-{
-  glm::vec3 vertex;
-  glm::vec3 color;
+struct VertexData {
+  glm::vec3 position;
+  glm::vec2 tex;
+  glm::vec3 normal;
 
-  Vertex(glm::vec3 v, glm::vec3 c): vertex(v), color(c) {}
+  VertexData(glm::vec3 p, glm::vec2 t, glm::vec3 n): position(p), tex(t), normal(n) {}
 };
 
 #endif /* GRAPHICS_HEADERS_H */

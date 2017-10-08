@@ -1,6 +1,6 @@
 #version 330
 
-smooth in vec4 color;
+smooth in vec3 color;
 
 out vec4 frag_color;
 

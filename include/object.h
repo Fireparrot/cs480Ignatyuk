@@ -14,19 +14,21 @@ class Object {
 private:
     glm::mat4 model;
     const aiScene * scene;
-    std::vector<Vertex> Vertices;
-    std::vector<unsigned int> Indices;
+    std::vector<VertexData> vertices;
+    std::vector<unsigned int> indices;
     GLuint VB;
     GLuint IB;
+    GLuint tex;
 public:
-    Object(const std::string & filename);
+    Object(const std::string & modelFilename, const std::string & imageFilename);
     ~Object();
 public:
     void Update(unsigned int dt);
     void Render();
 
-    glm::mat4 GetModel();
+    glm::mat4 GetModel() const;
     void SetModel(const glm::mat4 & model);
+    GLuint GetTexture() const;
 
 };
 
