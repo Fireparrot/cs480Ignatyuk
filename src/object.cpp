@@ -10,13 +10,20 @@ GLuint loadTexture(const char * filename) {
     ILuint image;
     ilGenImages(1, &image);
     ilBindImage(image);
+    ilEnable(IL_ORIGIN_SET);
+    ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
     ilLoadImage(filename);
     
     GLuint tex;
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
-    
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT), 0, GL_RGB, GL_UNSIGNED_BYTE, ilGetData());
+    //std::cerr << "color(0, 0): " << int(ilGetData()[0]) << " " << int(ilGetData()[1]) << " " << int(ilGetData()[2]) << std::endl;
+    glBindTexture(GL_TEXTURE_2D, 0);
     
     ilDeleteImages(1, &image);
     

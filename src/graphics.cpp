@@ -50,9 +50,9 @@ bool Graphics::Initialize(int width, int height) {
     }
     
     // Create the object
-    m_objects[0] = new Object("Cube_attempt.obj", "input2.png");
-    m_objects[1] = new Object("bumpy_sphere.obj", "input2.png");
-    m_objects[2] = new Object("cup2.obj", "input2.png");
+    m_objects[0] = new Object("sphere.obj", "Earth.png");
+    m_objects[1] = new Object("sphere.obj", "Earth.png");
+    m_objects[2] = new Object("sphere.obj", "Earth.png");
     
     // Set up the shaders
     m_shader = new Shader();
@@ -135,7 +135,7 @@ void Graphics::Update(unsigned int dt) {
     m1 *= glm::rotate(glm::mat4(1.0f), a10, glm::vec3(0.0, 1.0, 0.0));
     m1 *= glm::scale(glm::mat4(1.0f), glm::vec3(0.4f));
     m2  = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -3.5f, 0.0f));
-    m2 *= glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
+    m2 *= glm::scale(glm::mat4(1.0f), glm::vec3(6.0f));
     
     m_objects[0]->SetModel(m0);
     m_objects[1]->SetModel(m1);
@@ -153,7 +153,7 @@ void Graphics::Render() {
     //Send in the projection and view to the shader
     glUniformMatrix4fv(m_projectionMatrix, 1, GL_FALSE, glm::value_ptr(m_camera->GetProjection())); 
     glUniformMatrix4fv(m_viewMatrix, 1, GL_FALSE, glm::value_ptr(m_camera->GetView()));
-    glActiveTexture(GL_TEXTURE0 + 0);
+    glActiveTexture(GL_TEXTURE0);
     glUniform1i(m_tex, 0);
     
     //Render the objects
