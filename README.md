@@ -1,15 +1,12 @@
-# PA5: Assimp Model Loading
+# PA6: Model+Texture Loading
 
 Nikita Ignatyk and Roniel Padua
 
 # Description
 
-All files present are for PA5.
+All files present are for PA6.
 
-Those that remain from previous projects have not been changed, thus may remain as saying that they are for those previous projects, but they are nonetheless part of PA5.
-
-The cup and bumpy sphere models were created by Nikita in a "quick and dirty" program, and the cube with holes was created by Nikita's brother in blender (sorry for offset of model's center).
-
+The texture used is a map of the Earth. Two models calculate basic lighting while another does not.
 
 # Building
 
@@ -29,13 +26,15 @@ In the folder containing the include, src, shaders and objects folders:
 
 Running the project requires no command line arguments, nor does it give out a prompt.
 
-Simply type in "./PA5".
+Simply type in "./PA6".
 
 # Libraries
 
-GLM, GLEW and SDL are required libraries.
+GLM, GLEW, SDL, Assimp and devIL are required libraries.
 
-Furthermore, Assimp (version 3.2.0) must be installed using "sudo apt-get install libassimp-dev". This should place Assimp .h/.hpp files in /usr/include/assimp/ and libassimp.so in /usr/lib/x86_64-linux-gnu/
+Assimp must be installed using "sudo apt-get install libassimp-dev". This should place Assimp .h/.hpp files in /usr/include/assimp/ and libassimp.so in /usr/lib/x86_64-linux-gnu/
+
+devIL (outdated name: openIL) must be installed using "sudo apt-get install libdevil-dev". Its files should be installed in the same places as Assimp.
 
 # Controls
 

@@ -30,7 +30,9 @@ GLuint loadTexture(const char * filename) {
     return tex;
 }
 
-Object::Object(const std::string & filename, const std::string & imageFilename) {
+Object::Object(const std::string & filename, const std::string & imageFilename, bool useLighting_):
+    useLighting(useLighting_)
+{
     Assimp::Importer importer;
     scene = importer.ReadFile("objects/models/" + filename, aiProcess_Triangulate);
     
@@ -85,6 +87,7 @@ void Object::SetModel(const glm::mat4 & m) {
     model = m;
 }
 GLuint Object::GetTexture() const {return tex;}
+GLboolean Object::GetUseLighting() const {return useLighting;}
 
 void Object::Render() {
     glEnableVertexAttribArray(0);

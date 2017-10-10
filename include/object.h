@@ -19,8 +19,9 @@ private:
     GLuint VB;
     GLuint IB;
     GLuint tex;
+    GLboolean useLighting;
 public:
-    Object(const std::string & modelFilename, const std::string & imageFilename);
+    Object(const std::string & modelFilename, const std::string & imageFilename, bool useLighting_ = true);
     ~Object();
 public:
     void Update(unsigned int dt);
@@ -29,7 +30,7 @@ public:
     glm::mat4 GetModel() const;
     void SetModel(const glm::mat4 & model);
     GLuint GetTexture() const;
-
+    GLboolean GetUseLighting() const;
 };
 
 #endif /* OBJECT_H */

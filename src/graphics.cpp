@@ -1,5 +1,7 @@
 #include "graphics.h"
 
+using usi = unsigned short int;
+
 Graphics::Graphics():
     rotation(1.f),
     orbit(1.f),
@@ -52,7 +54,7 @@ bool Graphics::Initialize(int width, int height) {
     // Create the object
     m_objects[0] = new Object("sphere.obj", "Earth.png");
     m_objects[1] = new Object("sphere.obj", "Earth.png");
-    m_objects[2] = new Object("sphere.obj", "Earth.png");
+    m_objects[2] = new Object("sphere.obj", "Earth.png", false);
     
     // Set up the shaders
     m_shader = new Shader();
@@ -106,6 +108,12 @@ bool Graphics::Initialize(int width, int height) {
         return false;
     }
     
+    m_useLighting = m_shader->GetUniformLocation("useLighting");
+    if(m_tex == INVALID_UNIFORM_LOCATION) {
+        printf("m_lightLighting not found\n");
+        return false;
+    }
+    
     //enable depth testing
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -134,8 +142,9 @@ void Graphics::Update(unsigned int dt) {
     m1 *= glm::translate(glm::mat4(1.0f), glm::vec3( 8.0 * cos(a01), 0.0,  8.0 * sin(a01)));
     m1 *= glm::rotate(glm::mat4(1.0f), a10, glm::vec3(0.0, 1.0, 0.0));
     m1 *= glm::scale(glm::mat4(1.0f), glm::vec3(0.4f));
-    m2  = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -3.5f, 0.0f));
-    m2 *= glm::scale(glm::mat4(1.0f), glm::vec3(6.0f));
+    m2  = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.f, 0.0f));
+    m2 *= glm::rotate(glm::mat4(1.0f), a10, glm::vec3(0.0, 1.0, 0.0));
+    m2 *= glm::scale(glm::mat4(1.0f), glm::vec3(5.0f));
     
     m_objects[0]->SetModel(m0);
     m_objects[1]->SetModel(m1);
@@ -157,15 +166,12 @@ void Graphics::Render() {
     glUniform1i(m_tex, 0);
     
     //Render the objects
-    glUniformMatrix4fv(m_modelMatrix, 1, GL_FALSE, glm::value_ptr(m_objects[0]->GetModel()));
-    glBindTexture(GL_TEXTURE_2D, m_objects[0]->GetTexture());
-    m_objects[0]->Render();
-    glUniformMatrix4fv(m_modelMatrix, 1, GL_FALSE, glm::value_ptr(m_objects[1]->GetModel()));
-    glBindTexture(GL_TEXTURE_2D, m_objects[1]->GetTexture());
-    m_objects[1]->Render();
-    glUniformMatrix4fv(m_modelMatrix, 1, GL_FALSE, glm::value_ptr(m_objects[2]->GetModel()));
-    glBindTexture(GL_TEXTURE_2D, m_objects[2]->GetTexture());
-    m_objects[2]->Render();
+    for(usi i = 0; i < 3; ++i) {
+        glUniformMatrix4fv(m_modelMatrix, 1, GL_FALSE, glm::value_ptr(m_objects[i]->GetModel()));
+        glUniform1i(m_useLighting, m_objects[i]->GetUseLighting());
+        glBindTexture(GL_TEXTURE_2D, m_objects[i]->GetTexture());
+        m_objects[0]->Render();
+    }
     
     //Get any errors from OpenGL
     auto error = glGetError();
