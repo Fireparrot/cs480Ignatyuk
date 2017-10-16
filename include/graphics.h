@@ -7,22 +7,35 @@
 #include "cam.h"
 #include "shader.h"
 #include "object.h"
-#define ILUT_USE_OPENGL
 #include <IL/il.h>
-#include <IL/ilu.h>
-#include <IL/ilut.h>
+#include <vector>
+#include <string>
 
 using namespace std;
+
+struct StellarData {
+    std::string name;
+    float size;
+    float rotationTime;
+    float rotationTilt;
+    std::string orbitTarget;
+    float orbitRadius;
+    float orbitTime;
+    float orbitTilt;
+};
 
 class Graphics {
 public:
     Graphics();
     ~Graphics();
     bool Initialize(int width, int height);
-    void Update(unsigned int dt);
+    void Update(float dt);
     void Render();
-    
-    float rotation, orbit;
+    float timeMult;
+    float distanceMult;
+    float camTheta, camPhi, camDistance;
+    unsigned short int planetFocus;
+    float zoom;
 private:
     std::string ErrorString(GLenum error);
 
@@ -33,10 +46,19 @@ private:
     GLint m_viewMatrix;
     GLint m_modelMatrix;
     GLint m_tex;
-    GLint m_useLighting;
+    GLint m_ka, m_kd, m_ks;
+    GLint m_camPos;
 
-    Object * m_objects[3];
-    float a00, a01, a10, a11;
+    float sunRadius;
+    std::vector<Object *> objects;
+    std::vector<StellarData> data;
+    std::vector<float> rotations;
+    std::vector<float> orbits;
+    
+    float sizeOf(std::string objectName) const;
+    unsigned int findIndex(std::string name) const;
+    glm::mat4 orbitPosition(std::string objectName) const;
+    GLint GetUniformLocation(std::string name) const;
 };
 
 #endif /* GRAPHICS_H */

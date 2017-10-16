@@ -19,18 +19,20 @@ private:
     GLuint VB;
     GLuint IB;
     GLuint tex;
-    GLboolean useLighting;
+    float ka, kd, ks;
 public:
-    Object(const std::string & modelFilename, const std::string & imageFilename, bool useLighting_ = true);
+    Object(const std::string & modelFilename, const std::string & imageFilename, float ka_, float kd_, float ks_);
     ~Object();
 public:
-    void Update(unsigned int dt);
+    void Update(float dt);
     void Render();
 
     glm::mat4 GetModel() const;
     void SetModel(const glm::mat4 & model);
     GLuint GetTexture() const;
-    GLboolean GetUseLighting() const;
+    float GetKa() const;
+    float GetKd() const;
+    float GetKs() const;
 };
 
 #endif /* OBJECT_H */

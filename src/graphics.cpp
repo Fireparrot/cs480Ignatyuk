@@ -1,14 +1,16 @@
 #include "graphics.h"
+#include <fstream>
 
 using usi = unsigned short int;
 
 Graphics::Graphics():
-    rotation(1.f),
-    orbit(1.f),
-    a00(0),
-    a01(0),
-    a10(0),
-    a11(0)
+    timeMult(1.f),
+    distanceMult(1.f),
+    camTheta(0),
+    camPhi(0),
+    camDistance(10),
+    planetFocus(3),
+    zoom(6.f)
 {}
 
 Graphics::~Graphics() {}
@@ -51,10 +53,40 @@ bool Graphics::Initialize(int width, int height) {
         return false;
     }
     
-    // Create the object
-    m_objects[0] = new Object("sphere.obj", "Earth.png");
-    m_objects[1] = new Object("sphere.obj", "Earth.png");
-    m_objects[2] = new Object("sphere.obj", "Earth.png", false);
+    std::ifstream config;
+    config.open("config.txt");
+    if(!config.is_open()) {
+        std::cerr << "Failed to open config.txt!" << std::endl;
+        return false;
+    }
+    
+    while(!config.eof()) {
+        std::string word;
+        config >> word;
+        if(config.eof()) {break;}
+        if(word == "time") {config >> timeMult; continue;}
+        if(word == "distance") {config >> distanceMult; continue;}
+        if(word == "#") {while(config.get() != '\n'); continue;}
+        StellarData sd;
+        sd.name = word;
+        config >> sd.size
+               >> sd.rotationTime
+               >> sd.rotationTilt
+               >> sd.orbitTarget
+               >> sd.orbitRadius
+               >> sd.orbitTime
+               >> sd.orbitTilt;
+        data.push_back(sd);
+        if(sd.name == "Sun") {sunRadius = sd.size;}
+        
+        std::string meshFilename, textureFilename;
+        float ka, kd, ks;
+        config >> meshFilename >> textureFilename >> ka >> kd >> ks;
+        objects.push_back(new Object(meshFilename, textureFilename, ka, kd, ks));
+        
+        rotations.push_back(0.f);
+        orbits.push_back(0.f);
+    }
     
     // Set up the shaders
     m_shader = new Shader();
@@ -81,79 +113,74 @@ bool Graphics::Initialize(int width, int height) {
         return false;
     }
 
-    // Locate the projection matrix in the shader
-    m_projectionMatrix = m_shader->GetUniformLocation("projectionMatrix");
-    if(m_projectionMatrix == INVALID_UNIFORM_LOCATION) {
-        printf("m_projectionMatrix not found\n");
-        return false;
-    }
+    m_projectionMatrix = GetUniformLocation("projectionMatrix");
+    if(m_projectionMatrix == INVALID_UNIFORM_LOCATION) {return false;}
     
-    // Locate the view matrix in the shader
-    m_viewMatrix = m_shader->GetUniformLocation("viewMatrix");
-    if(m_viewMatrix == INVALID_UNIFORM_LOCATION) {
-        printf("m_viewMatrix not found\n");
-        return false;
-    }
+    m_viewMatrix = GetUniformLocation("viewMatrix");
+    if(m_viewMatrix == INVALID_UNIFORM_LOCATION) {return false;}
     
-    // Locate the model matrix in the shader
-    m_modelMatrix = m_shader->GetUniformLocation("modelMatrix");
-    if(m_modelMatrix == INVALID_UNIFORM_LOCATION) {
-        printf("m_modelMatrix not found\n");
-        return false;
-    }
+    m_modelMatrix = GetUniformLocation("modelMatrix");
+    if(m_modelMatrix == INVALID_UNIFORM_LOCATION) {return false;}
     
-    m_tex = m_shader->GetUniformLocation("tex");
-    if(m_tex == INVALID_UNIFORM_LOCATION) {
-        printf("m_tex not found\n");
-        return false;
-    }
+    m_tex = GetUniformLocation("tex");
+    if(m_tex == INVALID_UNIFORM_LOCATION) {return false;}
     
-    m_useLighting = m_shader->GetUniformLocation("useLighting");
-    if(m_tex == INVALID_UNIFORM_LOCATION) {
-        printf("m_lightLighting not found\n");
-        return false;
-    }
+    m_ka = GetUniformLocation("ka");
+    if(m_ka == INVALID_UNIFORM_LOCATION) {return false;}
+    
+    m_kd = GetUniformLocation("kd");
+    if(m_kd == INVALID_UNIFORM_LOCATION) {return false;}
+    
+    m_ks = GetUniformLocation("ks");
+    if(m_ks == INVALID_UNIFORM_LOCATION) {return false;}
+    
+    m_camPos = GetUniformLocation("camPos");
+    if(m_ks == INVALID_UNIFORM_LOCATION) {return false;}
     
     //enable depth testing
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+    glEnable(GL_CULL_FACE);
+    
     
     return true;
 }
 
-void Graphics::Update(unsigned int dt) {
-    //Update the objects
-    m_objects[0]->Update(dt);
-    m_objects[1]->Update(dt);
-    m_objects[2]->Update(dt);
+void Graphics::Update(float dt) {
+    dt *= timeMult;
+    for(usi i = 0; i < objects.size(); ++i) {
+    float rt = data[i].rotationTime;
+    float ot = data[i].orbitTime;
+        if(abs(rt)    > 0.01f) {rotations[i] += 2*float(M_PI)*dt/rt;}
+        if(abs(ot)    > 0.01f) {rotations[i] += 2*float(M_PI)*dt/ot;}           //Orbiting accounts for some of the apparent rotation, which needs to be taken away
+        if(abs(ot)    > 0.01f) {orbits[i]    += 2*float(M_PI)*dt/ot;}
+    }
     
-    //Set the model matrices of the objects
-    float baseAngle = dt * M_PI/1000;
-    a00 += baseAngle * rotation;                //Planet's rotation
-    a01 += baseAngle * orbit / 10;              //Planet's orbit
-    a10 += baseAngle / 10;                      //Moon's rotation
-    a11 += baseAngle / 30;                      //Moon's orbit
+    for(usi i = 0; i < objects.size(); ++i) {
+        glm::mat4 modelMat;
+        modelMat  = orbitPosition(data[i].name);
+        modelMat *= glm::rotate(glm::mat4(1), data[i].rotationTilt/180.f*float(M_PI), glm::vec3(0, 0, 1));
+        if(data[i].rotationTime == data[findIndex(data[i].orbitTarget)].rotationTime) {
+            modelMat *= glm::rotate(glm::mat4(1), rotations[findIndex(data[i].orbitTarget)], glm::vec3(0, 1, 0));
+        } else {
+            modelMat *= glm::rotate(glm::mat4(1), rotations[i], glm::vec3(0, 1, 0));
+        }
+        modelMat *= glm::scale(glm::mat4(1), glm::vec3(data[i].size));
+        objects[i]->SetModel(modelMat);
+    }
     
-    glm::mat4 m0, m1, m2;
-    m0  = glm::translate(glm::mat4(1.0f), glm::vec3( 8.0 * cos(a01), 0.0,  8.0 * sin(a01)));
-    m0 *= glm::rotate(glm::mat4(1.0f), a00, glm::vec3(0.0, 1.0, 0.0));
-    m0 *= glm::scale(glm::mat4(1.0f), glm::vec3(1.f));
-    m1  = glm::translate(glm::mat4(1.0f), glm::vec3( 3.0 * cos(a11), 0.0,  3.0 * sin(a11)));
-    m1 *= glm::translate(glm::mat4(1.0f), glm::vec3( 8.0 * cos(a01), 0.0,  8.0 * sin(a01)));
-    m1 *= glm::rotate(glm::mat4(1.0f), a10, glm::vec3(0.0, 1.0, 0.0));
-    m1 *= glm::scale(glm::mat4(1.0f), glm::vec3(0.4f));
-    m2  = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.f, 0.0f));
-    m2 *= glm::rotate(glm::mat4(1.0f), a10, glm::vec3(0.0, 1.0, 0.0));
-    m2 *= glm::scale(glm::mat4(1.0f), glm::vec3(5.0f));
-    
-    m_objects[0]->SetModel(m0);
-    m_objects[1]->SetModel(m1);
-    m_objects[2]->SetModel(m2);
+    camDistance = data[planetFocus].size * (2+zoom);
+    glm::vec3 camTarget = glm::vec3(objects[planetFocus]->GetModel()*glm::vec4(0, 0, 0, 1));
+    glm::vec3 camPosition = glm::vec3(glm::translate(glm::mat4(1), glm::vec3(camDistance*cos(camPhi)*cos(camTheta), camDistance*sin(camPhi), camDistance*cos(camPhi)*sin(camTheta))) * glm::vec4(camTarget, 1));
+    //glUniform3fv(m_camPos, 1, glm::value_ptr(camPosition));
+    const StellarData & od = data[planetFocus];
+    //std::cerr << od.name << "/" << od.size << "/" << od.rotationTime << "/" << od.rotationTilt << "/" << od.orbitTarget << "/" << od.orbitRadius << "/" << od.orbitTime << "/" << od.orbitTilt << std::endl;
+    m_camera->SetView(camPosition, camTarget);
 }
 
 void Graphics::Render() {
     //Clear the screen
-    glClearColor(0.0, 0.0, 0.2, 1.0);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     //Start the correct program
@@ -166,11 +193,13 @@ void Graphics::Render() {
     glUniform1i(m_tex, 0);
     
     //Render the objects
-    for(usi i = 0; i < 3; ++i) {
-        glUniformMatrix4fv(m_modelMatrix, 1, GL_FALSE, glm::value_ptr(m_objects[i]->GetModel()));
-        glUniform1i(m_useLighting, m_objects[i]->GetUseLighting());
-        glBindTexture(GL_TEXTURE_2D, m_objects[i]->GetTexture());
-        m_objects[0]->Render();
+    for(usi i = 0; i < objects.size(); ++i) {
+        glUniformMatrix4fv(m_modelMatrix, 1, GL_FALSE, glm::value_ptr(objects[i]->GetModel()));
+        glUniform1f(m_ka, objects[i]->GetKa());
+        glUniform1f(m_kd, objects[i]->GetKd());
+        glUniform1f(m_ks, objects[i]->GetKs());
+        glBindTexture(GL_TEXTURE_2D, objects[i]->GetTexture());
+        objects[i]->Render();
     }
     
     //Get any errors from OpenGL
@@ -195,5 +224,48 @@ std::string Graphics::ErrorString(GLenum error) {
     } else {
         return "None";
     }
+}
+
+float Graphics::sizeOf(std::string name) const {
+    unsigned int i = 0;
+    for(const StellarData & sd : data) {if(sd.name == name) {break;} ++i;}
+    if(i == data.size()) {return 0.f;}
+    return data[i].size;
+}
+unsigned int Graphics::findIndex(std::string name) const {
+    unsigned int i = 0;
+    for(const StellarData & sd : data) {if(sd.name == name) {break;} ++i;}
+    if(i == data.size()) {return 0;}
+    return i;
+}
+
+glm::mat4 Graphics::orbitPosition(std::string objectName) const {
+    unsigned int i = 0;
+    for(const StellarData & sd : data) {if(sd.name == objectName) {break;} ++i;}
+    if(i == data.size()) {return glm::mat4(1.0f);}
+    const StellarData & sd = data[i];
+    if(sd.name == sd.orbitTarget) {
+        float r = sd.orbitRadius;
+        float a = orbits[i];
+        float t = sd.orbitTilt/180.f*float(M_PI);
+        return glm::translate(glm::mat4(1.0f), glm::vec3(r*cos(a), -r*sin(a)*sin(t), -r*sin(a)*cos(t)));
+    } else {
+        float r = sd.orbitRadius;
+        float a = orbits[i];
+        float t = sd.orbitTilt/180.f*float(M_PI);
+        if(r > 0) {
+            if(sd.orbitTarget == "Sun") {r -= sunRadius; r /= distanceMult; r += sunRadius;}
+            else {r -= sizeOf(sd.orbitTarget); r /= sqrt(distanceMult); r += sizeOf(sd.orbitTarget);}
+        }
+        return glm::translate(glm::mat4(1.0f), glm::vec3(r*cos(a), -r*sin(a)*sin(t), -r*sin(a)*cos(t)))*orbitPosition(sd.orbitTarget);
+    }
+}
+
+GLint Graphics::GetUniformLocation(std::string name) const {
+    GLint loc = m_shader->GetUniformLocation(name.c_str());
+    if(loc == INVALID_UNIFORM_LOCATION) {
+        std::cout << name << " not found" << std::endl;
+    }
+    return loc;
 }
 

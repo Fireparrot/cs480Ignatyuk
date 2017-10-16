@@ -58,7 +58,7 @@ void Engine::Run() {
         }
         
         //Update and render the graphics
-        m_graphics->Update(m_DT);
+        m_graphics->Update(m_DT/1000.f);
         m_graphics->Render();
         
         //Swap to the Window
@@ -73,21 +73,44 @@ void Engine::Keyboard() {
     }
     
     if (m_event.type == SDL_KEYDOWN) {
-        // handle key down events here
-        if (m_event.key.keysym.sym == SDLK_ESCAPE) {
+        if(m_event.key.keysym.sym == SDLK_ESCAPE) {
           m_running = false;
         }
         if(m_event.key.keysym.sym == SDLK_RIGHT) {
-          m_graphics->orbit = 1.f;
+          m_graphics->camTheta +=  1.f*m_DT/1000;
         }
         if(m_event.key.keysym.sym == SDLK_LEFT) {
-          m_graphics->orbit = -1.f;
+          m_graphics->camTheta += -1.f*m_DT/1000;
         }
         if(m_event.key.keysym.sym == SDLK_UP) {
-          m_graphics->orbit *= -1;
+          m_graphics->camPhi +=  1.f*m_DT/1000;
         }
         if(m_event.key.keysym.sym == SDLK_DOWN) {
-          m_graphics->orbit = 0;
+          m_graphics->camPhi += -1.f*m_DT/1000;
+        }
+        if(m_graphics->camPhi >  M_PI/2 - 0.01f) {m_graphics->camPhi =  M_PI/2 - 0.01f;}
+        if(m_graphics->camPhi < -M_PI/2 + 0.01f) {m_graphics->camPhi = -M_PI/2 + 0.01f;}
+        if(m_event.key.keysym.sym == SDLK_l) {
+            m_graphics->planetFocus += 1;
+            if(m_graphics->planetFocus == 10) {m_graphics->planetFocus = 1;}
+        }
+        if(m_event.key.keysym.sym == SDLK_k) {
+            m_graphics->planetFocus -= 1;
+            if(m_graphics->planetFocus == 0) {m_graphics->planetFocus = 9;}
+        }
+        if(m_event.key.keysym.sym == SDLK_KP_PLUS) {
+            m_graphics->timeMult *= 1.1f;
+        }
+        if(m_event.key.keysym.sym == SDLK_KP_MINUS) {
+            m_graphics->timeMult /= 1.1f;
+            if(m_graphics->timeMult < 0.01f) {m_graphics->timeMult = 0.01f;}
+        }
+        if(m_event.key.keysym.sym == SDLK_KP_MULTIPLY) {
+            m_graphics->distanceMult /= 1.1f;
+            if(m_graphics->timeMult < 1.f) {m_graphics->timeMult = 1.f;}
+        }
+        if(m_event.key.keysym.sym == SDLK_KP_DIVIDE) {
+            m_graphics->distanceMult *= 1.1f;
         }
     }
 }
@@ -96,23 +119,37 @@ void Engine::Mouse() {
         m_running = false;
         return;
     }
-    
-    if(m_event.type == SDL_MOUSEBUTTONDOWN) {
-        if(m_event.button.button == SDL_BUTTON_RIGHT) {
-            if(m_graphics->rotation == -1) {
-                m_graphics->rotation = 0;
-            } else {
-                m_graphics->rotation = -1;
-            }
-        }
-        if(m_event.button.button == SDL_BUTTON_LEFT) {
-            if(m_graphics->rotation == 1) {
-                m_graphics->rotation = 0;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
-            } else {
-                m_graphics->rotation = 1;
-            }
-        }
+    if(m_event.type == SDL_MOUSEMOTION) {
+        m_graphics->camTheta += m_event.motion.xrel/40.f * m_DT/1000;
+        m_graphics->camPhi   += m_event.motion.yrel/40.f * m_DT/1000;
+        if(m_graphics->camPhi >  M_PI/2 - 0.01f) {m_graphics->camPhi =  M_PI/2 - 0.01f;}
+        if(m_graphics->camPhi < -M_PI/2 + 0.01f) {m_graphics->camPhi = -M_PI/2 + 0.01f;}
+        //std::cout << m_event.motion.xrel << ", " << m_event.motion.yrel << std::endl;
+        int x, y;
+        SDL_GetRelativeMouseState(&x, &y);
+        //std::cout << "  " << m_event.motion.x << ", " << m_event.motion.y << "  |  " << x << ", " << y << std::endl;
+        //std::cout << "    " << m_graphics->camTheta << " / " << m_graphics->camPhi << std::endl;
     }
+    if(m_event.type == SDL_MOUSEWHEEL) {
+        if(m_event.wheel.y ==  1) {m_graphics->zoom /= 1.1f;}
+        if(m_event.wheel.y == -1) {m_graphics->zoom *= 1.1f;}
+        if(m_graphics->zoom < 0.2f) {m_graphics->zoom = 0.2f;}
+    }
+    //SDL_WarpMouseGlobal(m_WINDOW_WIDTH/2, m_WINDOW_HEIGHT/2);
+    /*
+    if(m_event.motion.x > m_WINDOW_WIDTH-2) {
+        SDL_WarpMouseInWindow(m_window->gWindow, m_WINDOW_WIDTH-2, m_event.motion.y);
+    }
+    if(m_event.motion.x < 1) {
+        SDL_WarpMouseInWindow(m_window->gWindow, 1, m_event.motion.y);
+    }
+    if(m_event.motion.y > m_WINDOW_HEIGHT-2) {
+        SDL_WarpMouseInWindow(m_window->gWindow, m_event.motion.x, m_WINDOW_HEIGHT-2);
+    }
+    if(m_event.motion.y < 1) {
+        SDL_WarpMouseInWindow(m_window->gWindow, m_event.motion.x, 1);
+    }
+    */
 }
 
 unsigned int Engine::getDT() {

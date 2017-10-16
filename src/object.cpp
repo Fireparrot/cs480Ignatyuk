@@ -21,7 +21,7 @@ GLuint loadTexture(const char * filename) {
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT), 0, GL_RGB, GL_UNSIGNED_BYTE, ilGetData());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT), 0, (ilGetInteger(IL_IMAGE_BYTES_PER_PIXEL) == 3 ? GL_RGB : GL_RGBA), GL_UNSIGNED_BYTE, ilGetData());
     //std::cerr << "color(0, 0): " << int(ilGetData()[0]) << " " << int(ilGetData()[1]) << " " << int(ilGetData()[2]) << std::endl;
     glBindTexture(GL_TEXTURE_2D, 0);
     
@@ -30,11 +30,13 @@ GLuint loadTexture(const char * filename) {
     return tex;
 }
 
-Object::Object(const std::string & filename, const std::string & imageFilename, bool useLighting_):
-    useLighting(useLighting_)
+Object::Object(const std::string & modelFilename, const std::string & imageFilename, float ka_, float kd_, float ks_):
+    ka(ka_),
+    kd(kd_),
+    ks(ks_)
 {
     Assimp::Importer importer;
-    scene = importer.ReadFile("objects/models/" + filename, aiProcess_Triangulate);
+    scene = importer.ReadFile("objects/models/" + modelFilename, aiProcess_Triangulate);
     
     aiVector3D zero3D(0.f, 0.f, 0.f);
     
@@ -78,7 +80,7 @@ Object::~Object() {
     //delete scene;
 }
 
-void Object::Update(unsigned int dt) {}
+void Object::Update(float dt) {}
 
 glm::mat4 Object::GetModel() const {
     return model;
@@ -87,7 +89,9 @@ void Object::SetModel(const glm::mat4 & m) {
     model = m;
 }
 GLuint Object::GetTexture() const {return tex;}
-GLboolean Object::GetUseLighting() const {return useLighting;}
+float Object::GetKa() const {return ka;}
+float Object::GetKd() const {return kd;}
+float Object::GetKs() const {return ks;}
 
 void Object::Render() {
     glEnableVertexAttribArray(0);
