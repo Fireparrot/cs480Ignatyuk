@@ -7,6 +7,8 @@
 #include "window.h"
 #include "graphics.h"
 
+
+//Nothing is changed in the header, but the implementation has controls added to it
 class Engine {
 public:
     Engine(string name, int width, int height);

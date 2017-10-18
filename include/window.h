@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <string>
 
+//The only change to the window class is mouse grabbing/hiding
 class Window {
 public:
     Window();

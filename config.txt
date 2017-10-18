@@ -1,18 +1,33 @@
 time 0.2
 distance 100
 
-# (Object)  (size)  (rotation time) (rotation tilt) (orbit target)  (orbit radius) (orbit time) (orbit tilt) (mesh name) (texture name) (ka) (kd) (ks)
+# (Object)  (size)  (rotation time) (rotation tilt) (orbit target)  (orbit radius)    (orbit time)   (orbit tilt)  (mesh name)      (texture name) (ka) (kd) (ks)
 
-Sun         0.695700  24.47           0               Sun                0             0          0           sphere.obj  Sun.png       1.0 0   0
-Mercury     0.002439  58.67           0.03            Sun               57.190        87.6        7           sphere.obj  mercury.jpg   0.1 0.9 0
-Venus       0.006052  243             2.64            Sun              108.200        226.3       3.39        sphere.obj  venus.jpg     0.1 0.9 0
-Earth       0.006371  1               23.44           Sun              149.600        365.25      0           sphere.obj  Earth.png     0.1 0.9 0.9
-Mars        0.003394  1.04            25.19           Sun              227.940        686.2       1.85        sphere.obj  mars.jpg      0.1 0.9 0
-Jupiter     0.071400  0.42            3.13            Sun              778.330        4328.9      1.3         sphere.obj  jupiter.jpg   0.1 0.9 0
-Saturn      0.060000  0.46            26.73           Sun             1429.400        10752.9     2.49        sphere.obj  saturn.jpg    0.1 0.9 0
-Uranus      0.025559  0.71            82.23           Sun             2870.990        30663.65    0.77        sphere.obj  uranus.jpg    0.1 0.9 0
-Neptune     0.024764  0.67            28.32           Sun             4504.300        60152       1.77        sphere.obj  neptune.jpg   0.1 0.9 0
-Pluto       0.002000  6.39            57.47           Sun             5913.500        90550       17.2        sphere.obj  pluto.jpg     0.1 0.9 0
-Moon        0.001737  0               1.54            Earth              0.38440      27.32       5.14        sphere.obj  moon.jpg      0.1 0.9 0
-earthClouds 0.006382  0.8             23.44           Earth              0             0          0           sphere.obj  clouds.png    0.1 0.9 0
-earthLights 0.006376  1               23.44           Earth              0             0          0           sphere.obj  EarthLights.png 1 -1 0
+Sun         0.695700    24.47            0               Sun                0                0          0           sphere.obj      Sun.png         1.0 0   0
+
+Mercury     0.002439    58.67            0.03            Sun               57.190           87.6        7           sphere.obj      mercury.jpg     0.1 0.9 0
+Venus       0.006052   243               2.64            Sun              108.200          226.3        3.39        sphere.obj      venus.jpg       0.1 0.9 0
+Earth       0.006371     1              23.44            Sun              149.600          365.25       0           sphere.obj      Earth.png       0.1 0.9 1
+Mars        0.003394     1.04           25.19            Sun              227.940          686.2        1.85        sphere.obj      mars.jpg        0.1 0.9 0
+Jupiter     0.071400     0.42            3.13            Sun              778.330         4328.9        1.3         sphere.obj      jupiter.jpg     0.1 0.9 0
+Saturn      0.060000     0.46           26.73            Sun             1429.400        10752.9        2.49        sphere.obj      saturn.jpg      0.1 0.9 0
+Uranus      0.025559     0.71           82.23            Sun             2870.990        30663.65       0.77        sphere.obj      uranus.jpg      0.1 0.9 0
+Neptune     0.024764     0.67           28.32            Sun             4504.300        60152          1.77        sphere.obj      neptune.jpg     0.1 0.9 0
+Pluto       0.002000     6.39           57.47            Sun             5913.500        90550          17.2        sphere.obj      pluto.jpg       0.1 0.9 0
+
+# Sshhhhh the Mimas texture is totally not the Moon (comments are awesome) (the Mimas texture seems to be broken)
+Mimas       0.000198     0.94            0               Saturn             0.185520         0.94       28.26       sphere.obj      moon.jpg        0.1 0.9 0
+Enceladus   0.000252     1.37            0               Saturn             0.238200         1.37       26.75       sphere.obj      enceladus.jpg   0.1 0.9 0
+Miranda     0.000470     1.41            0               Uranus             0.129900         1.41       86.45       sphere.obj      miranda.jpg     0.1 0.9 0
+Tethys      0.000531     1.89            0               Saturn             0.294660         1.89       26.82       sphere.obj      tethys.jpg      0.1 0.9 0
+Io          0.001822     1.77            0               Jupiter            0.421700         1.77        3.17       sphere.obj      io.jpg          0.1 0.9 0
+Moon        0.001737     0               1.54            Earth              0.38440         27.32        6.68       sphere.obj      moon.jpg        0.1 0.9 0
+
+# For some reason, neptune's rings don't get rendered properly... but also saturn's rings don't mesh well. Blame Ron for the second one.
+jring       0.129000     0.42            3.13            Jupiter            0                0           0          flat_torus.obj  jupiterring.png 0.1 0.9 0
+sring       0.090000     0.46           26.73            Saturn             0                0           0          flat_torus.obj  saturnring.jpg  0.1 0.9 0
+uring       0.034890     0.71           82.23            Uranus             0                0           0          flat_torus.obj  uranusring.png  0.1 0.9 0
+nring       0.042900     0.67           28.32            Neptune            0                0           0          flat_torus.obj  saturnring.jpg  0.1 0.9 0
+
+earthClouds 0.006382     0.8            23.44            Earth              0                0           0          sphere.obj      clouds.png      0.1 0.9 0
+earthLights 0.006376     1              23.44            Earth              0                0           0          sphere.obj      EarthLights.png   1 -1  0

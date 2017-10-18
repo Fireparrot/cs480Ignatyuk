@@ -4,8 +4,8 @@
 using usi = unsigned short int;
 
 Graphics::Graphics():
-    timeMult(1.f),
-    distanceMult(1.f),
+    timeMultiplier(1.f),
+    distanceDivisor(1.f),
     camTheta(0),
     camPhi(0),
     camDistance(10),
@@ -36,9 +36,6 @@ bool Graphics::Initialize(int width, int height) {
     std::cout << "Initialized GL" << std::endl;
     
     ilInit();
-    //iluInit();
-    //ilutInit();
-    //ilutRenderer(ILUT_OPENGL);
     std::cout << "Initialized devIL" << std::endl;
     
     // For OpenGL 3
@@ -64,8 +61,8 @@ bool Graphics::Initialize(int width, int height) {
         std::string word;
         config >> word;
         if(config.eof()) {break;}
-        if(word == "time") {config >> timeMult; continue;}
-        if(word == "distance") {config >> distanceMult; continue;}
+        if(word == "time") {config >> timeMultiplier; continue;}
+        if(word == "distance") {config >> distanceDivisor; continue;}
         if(word == "#") {while(config.get() != '\n'); continue;}
         StellarData sd;
         sd.name = word;
@@ -137,9 +134,24 @@ bool Graphics::Initialize(int width, int height) {
     m_camPos = GetUniformLocation("camPos");
     if(m_ks == INVALID_UNIFORM_LOCATION) {return false;}
     
+    m_reflectOnlyBlue = GetUniformLocation("reflectOnlyBlue");
+    if(m_reflectOnlyBlue == INVALID_UNIFORM_LOCATION) {return false;}
+    
+    m_sunR = GetUniformLocation("sunR");
+    if(m_sunR == INVALID_UNIFORM_LOCATION) {return false;}
+    glUniform1f(m_sunR, sunRadius);
+    
+    m_shadowP = GetUniformLocation("shadowP");
+    if(m_shadowP == INVALID_UNIFORM_LOCATION) {return false;}
+    
+    m_shadowR = GetUniformLocation("shadowR");
+    if(m_shadowR == INVALID_UNIFORM_LOCATION) {return false;}
+    
     //enable depth testing
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+    
+    //Culls (i.e. doesn't render) back faces from triangles
     glEnable(GL_CULL_FACE);
     
     
@@ -147,7 +159,7 @@ bool Graphics::Initialize(int width, int height) {
 }
 
 void Graphics::Update(float dt) {
-    dt *= timeMult;
+    dt *= timeMultiplier;
     for(usi i = 0; i < objects.size(); ++i) {
     float rt = data[i].rotationTime;
     float ot = data[i].orbitTime;
@@ -172,7 +184,7 @@ void Graphics::Update(float dt) {
     camDistance = data[planetFocus].size * (2+zoom);
     glm::vec3 camTarget = glm::vec3(objects[planetFocus]->GetModel()*glm::vec4(0, 0, 0, 1));
     glm::vec3 camPosition = glm::vec3(glm::translate(glm::mat4(1), glm::vec3(camDistance*cos(camPhi)*cos(camTheta), camDistance*sin(camPhi), camDistance*cos(camPhi)*sin(camTheta))) * glm::vec4(camTarget, 1));
-    //glUniform3fv(m_camPos, 1, glm::value_ptr(camPosition));
+    glUniform3fv(m_camPos, 1, glm::value_ptr(camPosition-camTarget));
     const StellarData & od = data[planetFocus];
     //std::cerr << od.name << "/" << od.size << "/" << od.rotationTime << "/" << od.rotationTilt << "/" << od.orbitTarget << "/" << od.orbitRadius << "/" << od.orbitTime << "/" << od.orbitTilt << std::endl;
     m_camera->SetView(camPosition, camTarget);
@@ -198,6 +210,13 @@ void Graphics::Render() {
         glUniform1f(m_ka, objects[i]->GetKa());
         glUniform1f(m_kd, objects[i]->GetKd());
         glUniform1f(m_ks, objects[i]->GetKs());
+        glUniform1i(m_reflectOnlyBlue, (data[i].name == "Earth" ? 1 : 0));
+        if(data[i].orbitTarget != "Sun") {
+            glUniform3fv(m_shadowP, 1, glm::value_ptr(glm::vec3(orbitPosition(data[i].orbitTarget) * glm::vec4(0, 0, 0, 1))));
+            glUniform1f(m_shadowR, data[findIndex(data[i].orbitTarget)].size);
+        } else {
+            glUniform1f(m_shadowR, 0);
+        }
         glBindTexture(GL_TEXTURE_2D, objects[i]->GetTexture());
         objects[i]->Render();
     }
@@ -254,8 +273,8 @@ glm::mat4 Graphics::orbitPosition(std::string objectName) const {
         float a = orbits[i];
         float t = sd.orbitTilt/180.f*float(M_PI);
         if(r > 0) {
-            if(sd.orbitTarget == "Sun") {r -= sunRadius; r /= distanceMult; r += sunRadius;}
-            else {r -= sizeOf(sd.orbitTarget); r /= sqrt(distanceMult); r += sizeOf(sd.orbitTarget);}
+            if(sd.orbitTarget == "Sun") {r -= sunRadius; r /= distanceDivisor; r += sunRadius;}
+            else {r -= sizeOf(sd.orbitTarget); r /= sqrt(distanceDivisor); r += sizeOf(sd.orbitTarget);}
         }
         return glm::translate(glm::mat4(1.0f), glm::vec3(r*cos(a), -r*sin(a)*sin(t), -r*sin(a)*cos(t)))*orbitPosition(sd.orbitTarget);
     }

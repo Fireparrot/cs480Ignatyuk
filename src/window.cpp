@@ -38,7 +38,7 @@ bool Window::Initialize(const std::string &name, int* width, int* height) {
         *width = current.w;
     }
     
-    gWindow = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, *width, *height, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);// | SDL_WINDOW_INPUT_GRABBED);
+    gWindow = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, *width, *height, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
     if(gWindow == NULL) {
         printf("Widow failed to create: %s\n", SDL_GetError());
         return false;
@@ -56,7 +56,8 @@ bool Window::Initialize(const std::string &name, int* width, int* height) {
         printf("Unable to use VSync: %s\n", SDL_GetError());
         return false;
     }
-    //SDL_SetRelativeMouseMode(SDL_TRUE);
+    
+    //Grabs and hides the mouse
     SDL_ShowCursor(SDL_DISABLE);
     SDL_SetWindowGrab(gWindow, SDL_TRUE);
     

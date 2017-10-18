@@ -1,11 +1,9 @@
 #include "object.h"
-#define ILUT_USE_OPENGL
 #include <IL/il.h>
-#include <IL/ilu.h>
-#include <IL/ilut.h>
 
 #include <fstream>
 
+//This is a helper function that uses devIL to open an image, then loads it into openGL and passes back the openGL reference to the texture
 GLuint loadTexture(const char * filename) {
     ILuint image;
     ilGenImages(1, &image);
@@ -22,7 +20,6 @@ GLuint loadTexture(const char * filename) {
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT), 0, (ilGetInteger(IL_IMAGE_BYTES_PER_PIXEL) == 3 ? GL_RGB : GL_RGBA), GL_UNSIGNED_BYTE, ilGetData());
-    //std::cerr << "color(0, 0): " << int(ilGetData()[0]) << " " << int(ilGetData()[1]) << " " << int(ilGetData()[2]) << std::endl;
     glBindTexture(GL_TEXTURE_2D, 0);
     
     ilDeleteImages(1, &image);
@@ -30,6 +27,7 @@ GLuint loadTexture(const char * filename) {
     return tex;
 }
 
+//Constructs the object, loading the mesh model using assimp and the texture using devIL
 Object::Object(const std::string & modelFilename, const std::string & imageFilename, float ka_, float kd_, float ks_):
     ka(ka_),
     kd(kd_),
@@ -71,13 +69,11 @@ Object::Object(const std::string & modelFilename, const std::string & imageFilen
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices[0], GL_STATIC_DRAW);
     
     tex = loadTexture(("objects/textures/"+imageFilename).c_str());
-    //std::cout << "tex" << tex << std::endl;
 }
 
 Object::~Object() {
     vertices.clear();
     indices.clear();
-    //delete scene;
 }
 
 void Object::Update(float dt) {}

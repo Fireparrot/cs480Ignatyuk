@@ -99,18 +99,18 @@ void Engine::Keyboard() {
             if(m_graphics->planetFocus == 0) {m_graphics->planetFocus = 9;}
         }
         if(m_event.key.keysym.sym == SDLK_KP_PLUS) {
-            m_graphics->timeMult *= 1.1f;
+            m_graphics->timeMultiplier *= 1.1f;
         }
         if(m_event.key.keysym.sym == SDLK_KP_MINUS) {
-            m_graphics->timeMult /= 1.1f;
-            if(m_graphics->timeMult < 0.01f) {m_graphics->timeMult = 0.01f;}
+            m_graphics->timeMultiplier /= 1.1f;
+            if(m_graphics->timeMultiplier < 0.01f) {m_graphics->timeMultiplier = 0.01f;}
         }
         if(m_event.key.keysym.sym == SDLK_KP_MULTIPLY) {
-            m_graphics->distanceMult /= 1.1f;
-            if(m_graphics->timeMult < 1.f) {m_graphics->timeMult = 1.f;}
+            m_graphics->distanceDivisor /= 1.1f;
+            if(m_graphics->distanceDivisor < 1.f) {m_graphics->distanceDivisor = 1.f;}
         }
         if(m_event.key.keysym.sym == SDLK_KP_DIVIDE) {
-            m_graphics->distanceMult *= 1.1f;
+            m_graphics->distanceDivisor *= 1.1f;
         }
     }
 }

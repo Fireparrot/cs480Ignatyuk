@@ -1,12 +1,10 @@
-# PA6: Model+Texture Loading
+# PA7: Solar System
 
 Nikita Ignatyk and Roniel Padua
 
 # Description
 
-All files present are for PA6.
-
-The texture used is a map of the Earth. Two models calculate basic lighting while another does not.
+All files present are for PA7: Solar System.
 
 # Building
 
@@ -26,7 +24,7 @@ In the folder containing the include, src, shaders and objects folders:
 
 Running the project requires no command line arguments, nor does it give out a prompt.
 
-Simply type in "./PA6".
+Simply type in "./PA7".
 
 # Libraries
 
@@ -38,21 +36,33 @@ devIL (outdated name: openIL) must be installed using "sudo apt-get install libd
 
 # Controls
 
-These are here as a legacy, but they can be used to look at the "Planet" model from different angles and motions.
-
 ## Keyboard
 
-Left key: make "Planet" orbit counterclockwise.
+The up/down/left/right arrow keys change the angle from which the camera looks.
 
-Right key: make "Planet" orbit clockwise.
+The j and k keys cycle between the nine planets to choose which one to focus on.
 
-Up key: make "Planet" orbit the other way (if orbitting).
+The numpad + and - keys speed up and slow down the passage of time, respectively.
 
-Down key: make "Planet" not orbit.
+The numpad * and / keys increase and decrease the scale of the distances between the sun and the planets (and the satellites around the planets, to a lesser degree).
 
 ## Mouse
 
-Left button: if "Planet" is already rotating counterclockwise, stop; otherwise, rotate counterclockwise.
+Moving the mouse changes the angle of the camera, like the arrow keys do.
 
-Right button: if "Planet" is already rotating clockwise, stop; otherwise, rotate clockwise.
+The scroll wheel zooms in and out.
+
+## EXTRA CREDIT / ADDITIONS
+
+Configuration file.
+
+Live simulation speed adjustment.
+
+All gas planets have (wonky) rings.
+
+The scale of the distances between planets can be changed on the fly.
+
+Earth has clouds that travel over the surface, and lights that turn on at night and off at day.
+
+Satellites receive shadows from their parent planet.
 

@@ -5,6 +5,7 @@
 
 #include "graphics_headers.h"
 
+//Nothing is changed in the shader class
 class Shader {
 public:
     Shader();
