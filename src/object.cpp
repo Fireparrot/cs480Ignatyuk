@@ -3,91 +3,50 @@
 
 #include <fstream>
 
-//This is a helper function that uses devIL to open an image, then loads it into openGL and passes back the openGL reference to the texture
-GLuint loadTexture(const char * filename) {
-    ILuint image;
-    ilGenImages(1, &image);
-    ilBindImage(image);
-    ilEnable(IL_ORIGIN_SET);
-    ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
-    ilLoadImage(filename);
-    
-    GLuint tex;
-    glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT), 0, (ilGetInteger(IL_IMAGE_BYTES_PER_PIXEL) == 3 ? GL_RGB : GL_RGBA), GL_UNSIGNED_BYTE, ilGetData());
-    glBindTexture(GL_TEXTURE_2D, 0);
-    
-    ilDeleteImages(1, &image);
-    
-    return tex;
-}
-
 //Constructs the object, loading the mesh model using assimp and the texture using devIL
-Object::Object(const std::string & modelFilename, const std::string & imageFilename, float ka_, float kd_, float ks_):
-    ka(ka_),
-    kd(kd_),
-    ks(ks_)
+Object::Object(const std::vector<VertexData> * vertices_, const std::vector<unsigned int> * indices_, GLuint tex_, glm::vec3 size_, btDiscreteDynamicsWorld * dynamicsWorld_, const btRigidBody::btRigidBodyConstructionInfo & CI, bool isKinematic):
+    vertices(vertices_),
+    indices(indices_),
+    tex(tex_),
+    size(size_),
+    dynamicsWorld(dynamicsWorld_)
 {
-    Assimp::Importer importer;
-    scene = importer.ReadFile("objects/models/" + modelFilename, aiProcess_Triangulate);
-    
-    aiVector3D zero3D(0.f, 0.f, 0.f);
-    
-    for(unsigned int m = 0; m < scene->mNumMeshes; ++m) {
-        const aiMesh * mesh = scene->mMeshes[m];
-        for(unsigned int i = 0; i < mesh->mNumVertices; ++i) {
-            const aiVector3D * pos = &(mesh->mVertices[i]);
-            const aiVector3D * tex;
-            if(mesh->HasTextureCoords(0)) {
-                tex = &(mesh->mTextureCoords[0][i]);
-            } else {
-                tex = &zero3D;
-            }
-            const aiVector3D * norm = &(mesh->mNormals[i]);
-            if(&mesh->mNormals[0] == NULL || norm == NULL) {norm = &zero3D;}
-            vertices.push_back(VertexData{{pos->x, pos->y, pos->z}, {tex->x, tex->y}, {norm->x, norm->y, norm->z}});
-        }
-        for(unsigned int i = 0; i < scene->mMeshes[m]->mNumFaces; ++i) {
-            const aiFace & face = scene->mMeshes[m]->mFaces[i];
-            indices.push_back(face.mIndices[0]);
-            indices.push_back(face.mIndices[1]);
-            indices.push_back(face.mIndices[2]);
-        }
-    }
-    
     glGenBuffers(1, &VB);
     glBindBuffer(GL_ARRAY_BUFFER, VB);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(VertexData) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(VertexData) * vertices->size(), &(*vertices)[0], GL_STATIC_DRAW);
     
     glGenBuffers(1, &IB);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IB);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices->size(), &(*indices)[0], GL_STATIC_DRAW);
     
-    tex = loadTexture(("objects/textures/"+imageFilename).c_str());
+    rigidBody = new btRigidBody(CI);
+    if(isKinematic) {
+        rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+        rigidBody->setActivationState(DISABLE_DEACTIVATION);
+    }
+    dynamicsWorld->addRigidBody(rigidBody);
 }
 
 Object::~Object() {
-    vertices.clear();
-    indices.clear();
+    dynamicsWorld->removeRigidBody(rigidBody);
+    delete rigidBody->getMotionState();
+    delete rigidBody;
 }
 
-void Object::Update(float dt) {}
+void Object::Update(float dt) {
+    btTransform trans;
+    rigidBody->getMotionState()->getWorldTransform(trans);
+    //Later hook up Bullet's quaternion rotations here, if needed
+    model = glm::translate(glm::vec3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) *
+            glm::rotate(0.0f, glm::vec3(0.0f, 1.0f, 0.0f)) *                                                           
+            glm::scale(size);
+}
 
 glm::mat4 Object::GetModel() const {
     return model;
 }
-void Object::SetModel(const glm::mat4 & m) {
-    model = m;
-}
 GLuint Object::GetTexture() const {return tex;}
-float Object::GetKa() const {return ka;}
-float Object::GetKd() const {return kd;}
-float Object::GetKs() const {return ks;}
+btRigidBody * Object::GetRigidBody() {return rigidBody;}
 
 void Object::Render() {
     glEnableVertexAttribArray(0);
@@ -101,7 +60,7 @@ void Object::Render() {
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IB);
     
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, indices->size(), GL_UNSIGNED_INT, 0);
     
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);

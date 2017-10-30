@@ -4,35 +4,36 @@
 #include <vector>
 #include <string>
 
-#include <assimp/Importer.hpp> //includes the importer, which is used to read our obj file
-#include <assimp/scene.h> //includes the aiScene object
-#include <assimp/postprocess.h> //includes the postprocessing variables for the importer
-#include <assimp/color4.h> //includes the aiColor4 object, which is used to handle the colors from the mesh objects 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include <assimp/color4.h>
+
 #include "graphics_headers.h"
+
+class Graphics;
 
 class Object {
 private:
+    btDiscreteDynamicsWorld * dynamicsWorld;
     glm::mat4 model;
-    const aiScene * scene;
-    std::vector<VertexData> vertices;
-    std::vector<unsigned int> indices;
+    glm::vec3 size;
+    const std::vector<VertexData> * vertices;
+    const std::vector<unsigned int> * indices;
     GLuint VB;
     GLuint IB;
     GLuint tex;
-    float ka, kd, ks;
+    btRigidBody * rigidBody;
 public:
-    Object(const std::string & modelFilename, const std::string & imageFilename, float ka_, float kd_, float ks_);
+    Object(const std::vector<VertexData> * vertices_, const std::vector<unsigned int> * indices_, GLuint tex_, glm::vec3 size_, btDiscreteDynamicsWorld * dynamicsWorld_, const btRigidBody::btRigidBodyConstructionInfo & CI, bool isKinematic = false);
     ~Object();
 public:
     void Update(float dt);
     void Render();
 
     glm::mat4 GetModel() const;
-    void SetModel(const glm::mat4 & model);
     GLuint GetTexture() const;
-    float GetKa() const;
-    float GetKd() const;
-    float GetKs() const;
+    btRigidBody * GetRigidBody();
 };
 
 #endif /* OBJECT_H */

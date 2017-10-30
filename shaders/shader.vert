@@ -19,7 +19,6 @@ void main(void) {
 	gl_Position = (projectionMatrix * viewMatrix * modelMatrix) * v;
 	vs_out.worldPos = (modelMatrix * v).xyz;
 	vs_out.uv = v_uv;
-	vs_out.norm = (modelMatrix * vec4(v_normal, 0)).xyz;
-	vs_out.norm /= length(vs_out.norm);
+	vs_out.norm = v_normal;
 }
 

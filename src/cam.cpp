@@ -5,7 +5,7 @@ Cam::Cam() {}
 Cam::~Cam() {}
 
 bool Cam::Initialize(int w, int h) {
-    SetView(glm::vec3(0.0, 8.0, -16.0), glm::vec3(0.0, 0.0, 0.0));
+    SetView(glm::vec3(0.0, 20.0, -35.0), glm::vec3(0.0, 0.0, 0.0));
 
     projection = glm::perspective( 45.0f,             //the FoV typically 90 degrees is good which is what this is set to
                                    float(w)/float(h), //Aspect Ratio, so Circles stay Circular

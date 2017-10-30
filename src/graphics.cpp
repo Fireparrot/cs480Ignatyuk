@@ -3,17 +3,20 @@
 
 using usi = unsigned short int;
 
-Graphics::Graphics():
-    timeMultiplier(1.f),
-    distanceDivisor(1.f),
-    camTheta(0),
-    camPhi(0),
-    camDistance(10),
-    planetFocus(3),
-    zoom(6.f)
-{}
+Graphics::Graphics() {}
 
-Graphics::~Graphics() {}
+Graphics::~Graphics() {
+    for(Object * object : objects) {delete object;}
+    for(std::vector<VertexData> * vertices : vertexVectors) {delete vertices;}
+    for(std::vector<unsigned int> * indices : indexVectors) {delete indices;}
+    for(btCollisionShape * shape : collisionShapes) {delete shape;}
+    for(btRigidBody * rigidBody : rigidBodies) {delete rigidBody;}
+    delete dynamicsWorld;
+    delete solver;
+    delete collisionConfiguration;
+    delete dispatcher;
+    delete broadphase;
+}
 
 bool Graphics::Initialize(int width, int height) {
     //Used for the linux OS
@@ -50,41 +53,6 @@ bool Graphics::Initialize(int width, int height) {
         return false;
     }
     
-    std::ifstream config;
-    config.open("config.txt");
-    if(!config.is_open()) {
-        std::cerr << "Failed to open config.txt!" << std::endl;
-        return false;
-    }
-    
-    while(!config.eof()) {
-        std::string word;
-        config >> word;
-        if(config.eof()) {break;}
-        if(word == "time") {config >> timeMultiplier; continue;}
-        if(word == "distance") {config >> distanceDivisor; continue;}
-        if(word == "#") {while(config.get() != '\n'); continue;}
-        StellarData sd;
-        sd.name = word;
-        config >> sd.size
-               >> sd.rotationTime
-               >> sd.rotationTilt
-               >> sd.orbitTarget
-               >> sd.orbitRadius
-               >> sd.orbitTime
-               >> sd.orbitTilt;
-        data.push_back(sd);
-        if(sd.name == "Sun") {sunRadius = sd.size;}
-        
-        std::string meshFilename, textureFilename;
-        float ka, kd, ks;
-        config >> meshFilename >> textureFilename >> ka >> kd >> ks;
-        objects.push_back(new Object(meshFilename, textureFilename, ka, kd, ks));
-        
-        rotations.push_back(0.f);
-        orbits.push_back(0.f);
-    }
-    
     // Set up the shaders
     m_shader = new Shader();
     if(!m_shader->Initialize()) {
@@ -106,7 +74,7 @@ bool Graphics::Initialize(int width, int height) {
     
     // Connect the program
     if(!m_shader->Finalize()) {
-        printf("Program to Finalize\n");
+        printf("Program failed to Finalize\n");
         return false;
     }
 
@@ -122,31 +90,6 @@ bool Graphics::Initialize(int width, int height) {
     m_tex = GetUniformLocation("tex");
     if(m_tex == INVALID_UNIFORM_LOCATION) {return false;}
     
-    m_ka = GetUniformLocation("ka");
-    if(m_ka == INVALID_UNIFORM_LOCATION) {return false;}
-    
-    m_kd = GetUniformLocation("kd");
-    if(m_kd == INVALID_UNIFORM_LOCATION) {return false;}
-    
-    m_ks = GetUniformLocation("ks");
-    if(m_ks == INVALID_UNIFORM_LOCATION) {return false;}
-    
-    m_camPos = GetUniformLocation("camPos");
-    if(m_ks == INVALID_UNIFORM_LOCATION) {return false;}
-    
-    m_reflectOnlyBlue = GetUniformLocation("reflectOnlyBlue");
-    if(m_reflectOnlyBlue == INVALID_UNIFORM_LOCATION) {return false;}
-    
-    m_sunR = GetUniformLocation("sunR");
-    if(m_sunR == INVALID_UNIFORM_LOCATION) {return false;}
-    glUniform1f(m_sunR, sunRadius);
-    
-    m_shadowP = GetUniformLocation("shadowP");
-    if(m_shadowP == INVALID_UNIFORM_LOCATION) {return false;}
-    
-    m_shadowR = GetUniformLocation("shadowR");
-    if(m_shadowR == INVALID_UNIFORM_LOCATION) {return false;}
-    
     //enable depth testing
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -154,40 +97,209 @@ bool Graphics::Initialize(int width, int height) {
     //Culls (i.e. doesn't render) back faces from triangles
     glEnable(GL_CULL_FACE);
     
+    broadphase = new btDbvtBroadphase();
+    collisionConfiguration = new btDefaultCollisionConfiguration();
+    dispatcher = new btCollisionDispatcher(collisionConfiguration);
+    solver = new btSequentialImpulseConstraintSolver;
+    dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
+
+    dynamicsWorld->setGravity(btVector3(0, -10, 0));
+    
+    for(usi i = 0; i < 3; ++i) {
+        vertexVectors.push_back(new std::vector<VertexData>());
+        indexVectors.push_back(new std::vector<unsigned int>());
+    }
+    loadMesh("box.obj",         *(vertexVectors[0]), *(indexVectors[0]));
+    loadMesh("cylinder.obj",    *(vertexVectors[1]), *(indexVectors[1]));
+    loadMesh("sphere.obj",      *(vertexVectors[2]), *(indexVectors[2]));
+    for(usi i = 0; i < 1; ++i) {
+        texes.push_back(GLuint(0));
+    }
+    //lol
+    texes[0] = loadTexture("Earth.png");
+    
+    collisionShapes.push_back(new btBoxShape({1.0f, 1.0f, 1.0f}));
+    collisionShapes.push_back(new btCylinderShape({4.0f, 4.0f, 4.0f}));
+    collisionShapes.push_back(new btSphereShape(1.0f));
+    
+    collisionShapes.push_back(new btBoxShape({20.0f, 1.0f, 20.0f}));
+    collisionShapes.push_back(new btBoxShape({20.0f, 1.0f,  1.0f}));
+    collisionShapes.push_back(new btBoxShape({ 1.0f, 1.0f, 20.0f}));
+    
+    btRigidBody::btRigidBodyConstructionInfo CI(
+        0,
+        new btDefaultMotionState(btTransform(
+            btQuaternion(0, 0, 0, 1),
+            btVector3(-5, 1, 0)
+        )),
+        collisionShapes[0],
+        btVector3(0.0f, 0.0f, 0.0f)
+    );
+    objects.push_back(new Object(
+        vertexVectors[0],
+        indexVectors[0],
+        texes[0],
+        {1.0f, 1.0f, 1.0f},
+        dynamicsWorld,
+        CI,
+        true
+    ));
+    
+    CI = btRigidBody::btRigidBodyConstructionInfo(
+        0,
+        new btDefaultMotionState(btTransform(
+            btQuaternion(0, 0, 0, 1),
+            btVector3(0, 2, 0)
+        )),
+        collisionShapes[1],
+        btVector3(0.0f, 0.0f, 0.0f)
+    );
+    CI.m_restitution = 4.0f;
+    objects.push_back(new Object(
+        vertexVectors[1],
+        indexVectors[1],
+        texes[0],
+        {4.0f, 1.0f, 4.0f},
+        dynamicsWorld,
+        CI
+    ));
+    
+    btVector3 inertia(0.0f, 0.0f, 0.0f);
+    collisionShapes[2]->calculateLocalInertia(5.0f, inertia);
+    CI = btRigidBody::btRigidBodyConstructionInfo(
+        5,
+        new btDefaultMotionState(btTransform(
+            btQuaternion(0, 0, 0, 1),
+            btVector3(-5, 1, 5)
+        )),
+        collisionShapes[2],
+        inertia
+    );
+    CI.m_restitution = 1.0f;
+    objects.push_back(new Object(
+        vertexVectors[2],
+        indexVectors[2],
+        texes[0],
+        {1.0f, 1.0f, 1.0f},
+        dynamicsWorld,
+        CI
+    ));
+    
+    
+    
+    CI = btRigidBody::btRigidBodyConstructionInfo(
+        0,
+        new btDefaultMotionState(btTransform(
+            btQuaternion(0, 0, 0, 1),
+            btVector3(0, 0, 0)
+        )),
+        collisionShapes[3],
+        btVector3(0.0f, 0.0f, 0.0f)
+    );
+    CI.m_restitution = 0.5f;
+    objects.push_back(new Object(
+        vertexVectors[0],
+        indexVectors[0],
+        texes[0],
+        {20.0f, 1.0f, 20.0f},
+        dynamicsWorld,
+        CI
+    ));
+    
+    CI = btRigidBody::btRigidBodyConstructionInfo(
+        0,
+        new btDefaultMotionState(btTransform(
+            btQuaternion(0, 0, 0, 1),
+            btVector3(0, 1, 20)
+        )),
+        collisionShapes[4],
+        btVector3(0.0f, 0.0f, 0.0f)
+    );
+    CI.m_restitution = 0.5f;
+    objects.push_back(new Object(
+        vertexVectors[0],
+        indexVectors[0],
+        texes[0],
+        {20.0f, 1.0f, 1.0f},
+        dynamicsWorld,
+        CI
+    ));
+    
+    CI = btRigidBody::btRigidBodyConstructionInfo(
+        0,
+        new btDefaultMotionState(btTransform(
+            btQuaternion(0, 0, 0, 1),
+            btVector3(0, 1, -20)
+        )),
+        collisionShapes[4],
+        btVector3(0.0f, 0.0f, 0.0f)
+    );
+    CI.m_restitution = 0.5f;
+    objects.push_back(new Object(
+        vertexVectors[0],
+        indexVectors[0],
+        texes[0],
+        {20.0f, 1.0f, 1.0f},
+        dynamicsWorld,
+        CI
+    ));
+    
+    CI = btRigidBody::btRigidBodyConstructionInfo(
+        0,
+        new btDefaultMotionState(btTransform(
+            btQuaternion(0, 0, 0, 1),
+            btVector3(20, 1, 0)
+        )),
+        collisionShapes[5],
+        btVector3(0.0f, 0.0f, 0.0f)
+    );
+    CI.m_restitution = 0.5f;
+    objects.push_back(new Object(
+        vertexVectors[0],
+        indexVectors[0],
+        texes[0],
+        {1.0f, 1.0f, 20.0f},
+        dynamicsWorld,
+        CI
+    ));
+    
+    CI = btRigidBody::btRigidBodyConstructionInfo(
+        0,
+        new btDefaultMotionState(btTransform(
+            btQuaternion(0, 0, 0, 1),
+            btVector3(-20, 1, 0)
+        )),
+        collisionShapes[5],
+        btVector3(0.0f, 0.0f, 0.0f)
+    );
+    CI.m_restitution = 0.5f;
+    objects.push_back(new Object(
+        vertexVectors[0],
+        indexVectors[0],
+        texes[0],
+        {1.0f, 1.0f, 20.0f},
+        dynamicsWorld,
+        CI
+    ));
+    
+    
     
     return true;
 }
 
+void Graphics::moveCylinder(float x, float z) {
+    btTransform trans;
+    objects[0]->GetRigidBody()->getMotionState()->getWorldTransform(trans);
+    trans.setOrigin(btVector3(trans.getOrigin().getX() + x, trans.getOrigin().getY(), trans.getOrigin().getZ() + z));
+    objects[0]->GetRigidBody()->getMotionState()->setWorldTransform(trans);
+    //std::cout << "Position: " << trans.getOrigin().getX() << ", " << trans.getOrigin().getY() << ", " << trans.getOrigin().getZ() << std::endl;
+}
+
 void Graphics::Update(float dt) {
-    dt *= timeMultiplier;
-    for(usi i = 0; i < objects.size(); ++i) {
-    float rt = data[i].rotationTime;
-    float ot = data[i].orbitTime;
-        if(abs(rt)    > 0.01f) {rotations[i] += 2*float(M_PI)*dt/rt;}
-        if(abs(ot)    > 0.01f) {rotations[i] += 2*float(M_PI)*dt/ot;}           //Orbiting accounts for some of the apparent rotation, which needs to be taken away
-        if(abs(ot)    > 0.01f) {orbits[i]    += 2*float(M_PI)*dt/ot;}
+    dynamicsWorld->stepSimulation(dt, 10);
+    for(Object * object : objects) {
+        object->Update(dt);
     }
-    
-    for(usi i = 0; i < objects.size(); ++i) {
-        glm::mat4 modelMat;
-        modelMat  = orbitPosition(data[i].name);
-        modelMat *= glm::rotate(glm::mat4(1), data[i].rotationTilt/180.f*float(M_PI), glm::vec3(0, 0, 1));
-        if(data[i].rotationTime == data[findIndex(data[i].orbitTarget)].rotationTime) {
-            modelMat *= glm::rotate(glm::mat4(1), rotations[findIndex(data[i].orbitTarget)], glm::vec3(0, 1, 0));
-        } else {
-            modelMat *= glm::rotate(glm::mat4(1), rotations[i], glm::vec3(0, 1, 0));
-        }
-        modelMat *= glm::scale(glm::mat4(1), glm::vec3(data[i].size));
-        objects[i]->SetModel(modelMat);
-    }
-    
-    camDistance = data[planetFocus].size * (2+zoom);
-    glm::vec3 camTarget = glm::vec3(objects[planetFocus]->GetModel()*glm::vec4(0, 0, 0, 1));
-    glm::vec3 camPosition = glm::vec3(glm::translate(glm::mat4(1), glm::vec3(camDistance*cos(camPhi)*cos(camTheta), camDistance*sin(camPhi), camDistance*cos(camPhi)*sin(camTheta))) * glm::vec4(camTarget, 1));
-    glUniform3fv(m_camPos, 1, glm::value_ptr(camPosition-camTarget));
-    const StellarData & od = data[planetFocus];
-    //std::cerr << od.name << "/" << od.size << "/" << od.rotationTime << "/" << od.rotationTilt << "/" << od.orbitTarget << "/" << od.orbitRadius << "/" << od.orbitTime << "/" << od.orbitTilt << std::endl;
-    m_camera->SetView(camPosition, camTarget);
 }
 
 void Graphics::Render() {
@@ -207,16 +319,6 @@ void Graphics::Render() {
     //Render the objects
     for(usi i = 0; i < objects.size(); ++i) {
         glUniformMatrix4fv(m_modelMatrix, 1, GL_FALSE, glm::value_ptr(objects[i]->GetModel()));
-        glUniform1f(m_ka, objects[i]->GetKa());
-        glUniform1f(m_kd, objects[i]->GetKd());
-        glUniform1f(m_ks, objects[i]->GetKs());
-        glUniform1i(m_reflectOnlyBlue, (data[i].name == "Earth" ? 1 : 0));
-        if(data[i].orbitTarget != "Sun") {
-            glUniform3fv(m_shadowP, 1, glm::value_ptr(glm::vec3(orbitPosition(data[i].orbitTarget) * glm::vec4(0, 0, 0, 1))));
-            glUniform1f(m_shadowR, data[findIndex(data[i].orbitTarget)].size);
-        } else {
-            glUniform1f(m_shadowR, 0);
-        }
         glBindTexture(GL_TEXTURE_2D, objects[i]->GetTexture());
         objects[i]->Render();
     }
@@ -245,46 +347,63 @@ std::string Graphics::ErrorString(GLenum error) {
     }
 }
 
-float Graphics::sizeOf(std::string name) const {
-    unsigned int i = 0;
-    for(const StellarData & sd : data) {if(sd.name == name) {break;} ++i;}
-    if(i == data.size()) {return 0.f;}
-    return data[i].size;
-}
-unsigned int Graphics::findIndex(std::string name) const {
-    unsigned int i = 0;
-    for(const StellarData & sd : data) {if(sd.name == name) {break;} ++i;}
-    if(i == data.size()) {return 0;}
-    return i;
-}
-
-glm::mat4 Graphics::orbitPosition(std::string objectName) const {
-    unsigned int i = 0;
-    for(const StellarData & sd : data) {if(sd.name == objectName) {break;} ++i;}
-    if(i == data.size()) {return glm::mat4(1.0f);}
-    const StellarData & sd = data[i];
-    if(sd.name == sd.orbitTarget) {
-        float r = sd.orbitRadius;
-        float a = orbits[i];
-        float t = sd.orbitTilt/180.f*float(M_PI);
-        return glm::translate(glm::mat4(1.0f), glm::vec3(r*cos(a), -r*sin(a)*sin(t), -r*sin(a)*cos(t)));
-    } else {
-        float r = sd.orbitRadius;
-        float a = orbits[i];
-        float t = sd.orbitTilt/180.f*float(M_PI);
-        if(r > 0) {
-            if(sd.orbitTarget == "Sun") {r -= sunRadius; r /= distanceDivisor; r += sunRadius;}
-            else {r -= sizeOf(sd.orbitTarget); r /= sqrt(distanceDivisor); r += sizeOf(sd.orbitTarget);}
-        }
-        return glm::translate(glm::mat4(1.0f), glm::vec3(r*cos(a), -r*sin(a)*sin(t), -r*sin(a)*cos(t)))*orbitPosition(sd.orbitTarget);
-    }
-}
-
 GLint Graphics::GetUniformLocation(std::string name) const {
     GLint loc = m_shader->GetUniformLocation(name.c_str());
     if(loc == INVALID_UNIFORM_LOCATION) {
         std::cout << name << " not found" << std::endl;
     }
     return loc;
+}
+
+//This is a helper function that uses devIL to open an image, then loads it into openGL and passes back the openGL reference to the texture
+GLuint loadTexture(std::string filename) {
+    ILuint image;
+    ilGenImages(1, &image);
+    ilBindImage(image);
+    ilEnable(IL_ORIGIN_SET);
+    ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
+    ilLoadImage(("objects/textures/" + filename).c_str());
+    
+    GLuint tex;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT), 0, (ilGetInteger(IL_IMAGE_BYTES_PER_PIXEL) == 3 ? GL_RGB : GL_RGBA), GL_UNSIGNED_BYTE, ilGetData());
+    glBindTexture(GL_TEXTURE_2D, 0);
+    
+    ilDeleteImages(1, &image);
+    
+    return tex;
+}
+void loadMesh(std::string filename, std::vector<VertexData> & vertices, std::vector<unsigned int> & indices) {
+    Assimp::Importer importer;
+    const aiScene * scene = importer.ReadFile("objects/models/" + filename, aiProcess_Triangulate);
+    
+    aiVector3D zero3D(0.f, 0.f, 0.f);
+    
+    for(unsigned int m = 0; m < scene->mNumMeshes; ++m) {
+        const aiMesh * mesh = scene->mMeshes[m];
+        for(unsigned int i = 0; i < mesh->mNumVertices; ++i) {
+            const aiVector3D * pos = &(mesh->mVertices[i]);
+            const aiVector3D * st;
+            if(mesh->HasTextureCoords(0)) {
+                st = &(mesh->mTextureCoords[0][i]);
+            } else {
+                st = &zero3D;
+            }
+            const aiVector3D * norm = &(mesh->mNormals[i]);
+            if(&mesh->mNormals[0] == NULL || norm == NULL) {norm = &zero3D;}
+            vertices.push_back(VertexData{{pos->x, pos->y, pos->z}, {st->x, st->y}, {norm->x, norm->y, norm->z}});
+        }
+        for(unsigned int i = 0; i < scene->mMeshes[m]->mNumFaces; ++i) {
+            const aiFace & face = scene->mMeshes[m]->mFaces[i];
+            indices.push_back(face.mIndices[0]);
+            indices.push_back(face.mIndices[1]);
+            indices.push_back(face.mIndices[2]);
+        }
+    }
 }
 
