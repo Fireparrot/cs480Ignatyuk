@@ -3,6 +3,11 @@
 
 using usi = unsigned short int;
 
+void clip(float & x, float min, float max) {
+    if(x < min) {x = min;}
+    if(x > max) {x = max;}
+}
+
 Graphics::Graphics() {}
 
 Graphics::~Graphics() {
@@ -105,40 +110,48 @@ bool Graphics::Initialize(int width, int height) {
 
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
     
-    for(usi i = 0; i < 3; ++i) {
+    for(usi i = 0; i < 4; ++i) {
         vertexVectors.push_back(new std::vector<VertexData>());
         indexVectors.push_back(new std::vector<unsigned int>());
     }
     loadMesh("box.obj",         *(vertexVectors[0]), *(indexVectors[0]));
     loadMesh("cylinder.obj",    *(vertexVectors[1]), *(indexVectors[1]));
     loadMesh("sphere.obj",      *(vertexVectors[2]), *(indexVectors[2]));
-    for(usi i = 0; i < 1; ++i) {
+    btTriangleMesh * trimesh0 = new btTriangleMesh();
+    loadMesh("icosahedron.obj",*(vertexVectors[3]), *(indexVectors[3]), trimesh0);
+    trimesh0->setScaling({1, 1, 1});
+    for(usi i = 0; i < 3; ++i) {
         texes.push_back(GLuint(0));
     }
     //lol
-    texes[0] = loadTexture("Earth.png");
+    texes[0] = loadTexture("wood_texture.jpg");
+    texes[1] = loadTexture("aluminum.jpg");
+    texes[2] = loadTexture("blue_texture.jpg");
     
     collisionShapes.push_back(new btBoxShape({1.0f, 1.0f, 1.0f}));
     collisionShapes.push_back(new btCylinderShape({4.0f, 4.0f, 4.0f}));
     collisionShapes.push_back(new btSphereShape(1.0f));
     
     collisionShapes.push_back(new btBoxShape({20.0f, 1.0f, 20.0f}));
-    collisionShapes.push_back(new btBoxShape({20.0f, 1.0f,  1.0f}));
-    collisionShapes.push_back(new btBoxShape({ 1.0f, 1.0f, 20.0f}));
+    collisionShapes.push_back(new btBoxShape({20.0f, 2.0f,  1.0f}));
+    collisionShapes.push_back(new btBoxShape({ 1.0f, 2.0f, 18.0f}));
+    collisionShapes.push_back(new btConvexTriangleMeshShape(trimesh0));
+    
+    btVector3 btZeroVec3(0, 0, 0);
     
     btRigidBody::btRigidBodyConstructionInfo CI(
         0,
         new btDefaultMotionState(btTransform(
-            btQuaternion(0, 0, 0, 1),
-            btVector3(-5, 1, 0)
+            {0, 0, 0, 1},
+            {-5, 2, 0}
         )),
         collisionShapes[0],
-        btVector3(0.0f, 0.0f, 0.0f)
+        btZeroVec3
     );
     objects.push_back(new Object(
         vertexVectors[0],
         indexVectors[0],
-        texes[0],
+        texes[1],
         {1.0f, 1.0f, 1.0f},
         dynamicsWorld,
         CI,
@@ -148,17 +161,17 @@ bool Graphics::Initialize(int width, int height) {
     CI = btRigidBody::btRigidBodyConstructionInfo(
         0,
         new btDefaultMotionState(btTransform(
-            btQuaternion(0, 0, 0, 1),
-            btVector3(0, 2, 0)
+            {0, 0, 0, 1},
+            {0, 2, 0}
         )),
         collisionShapes[1],
-        btVector3(0.0f, 0.0f, 0.0f)
+        btZeroVec3
     );
     CI.m_restitution = 4.0f;
     objects.push_back(new Object(
         vertexVectors[1],
         indexVectors[1],
-        texes[0],
+        texes[2],
         {4.0f, 1.0f, 4.0f},
         dynamicsWorld,
         CI
@@ -169,8 +182,8 @@ bool Graphics::Initialize(int width, int height) {
     CI = btRigidBody::btRigidBodyConstructionInfo(
         5,
         new btDefaultMotionState(btTransform(
-            btQuaternion(0, 0, 0, 1),
-            btVector3(-5, 1, 5)
+            {0, 0, 0, 1},
+            {-5, 2, 5}
         )),
         collisionShapes[2],
         inertia
@@ -179,7 +192,7 @@ bool Graphics::Initialize(int width, int height) {
     objects.push_back(new Object(
         vertexVectors[2],
         indexVectors[2],
-        texes[0],
+        texes[1],
         {1.0f, 1.0f, 1.0f},
         dynamicsWorld,
         CI
@@ -190,11 +203,11 @@ bool Graphics::Initialize(int width, int height) {
     CI = btRigidBody::btRigidBodyConstructionInfo(
         0,
         new btDefaultMotionState(btTransform(
-            btQuaternion(0, 0, 0, 1),
-            btVector3(0, 0, 0)
+            {0, 0, 0, 1},
+            {0, 0, 0}
         )),
         collisionShapes[3],
-        btVector3(0.0f, 0.0f, 0.0f)
+        btZeroVec3
     );
     CI.m_restitution = 0.5f;
     objects.push_back(new Object(
@@ -209,18 +222,18 @@ bool Graphics::Initialize(int width, int height) {
     CI = btRigidBody::btRigidBodyConstructionInfo(
         0,
         new btDefaultMotionState(btTransform(
-            btQuaternion(0, 0, 0, 1),
-            btVector3(0, 1, 20)
+            {0, 0, 0, 1},
+            {0, 3, 19}
         )),
         collisionShapes[4],
-        btVector3(0.0f, 0.0f, 0.0f)
+        btZeroVec3
     );
     CI.m_restitution = 0.5f;
     objects.push_back(new Object(
         vertexVectors[0],
         indexVectors[0],
         texes[0],
-        {20.0f, 1.0f, 1.0f},
+        {20.0f, 2.0f, 1.0f},
         dynamicsWorld,
         CI
     ));
@@ -228,18 +241,18 @@ bool Graphics::Initialize(int width, int height) {
     CI = btRigidBody::btRigidBodyConstructionInfo(
         0,
         new btDefaultMotionState(btTransform(
-            btQuaternion(0, 0, 0, 1),
-            btVector3(0, 1, -20)
+            {0, 0, 0, 1},
+            {0, 3, -19}
         )),
         collisionShapes[4],
-        btVector3(0.0f, 0.0f, 0.0f)
+        btZeroVec3
     );
     CI.m_restitution = 0.5f;
     objects.push_back(new Object(
         vertexVectors[0],
         indexVectors[0],
         texes[0],
-        {20.0f, 1.0f, 1.0f},
+        {20.0f, 2.0f, 1.0f},
         dynamicsWorld,
         CI
     ));
@@ -247,18 +260,18 @@ bool Graphics::Initialize(int width, int height) {
     CI = btRigidBody::btRigidBodyConstructionInfo(
         0,
         new btDefaultMotionState(btTransform(
-            btQuaternion(0, 0, 0, 1),
-            btVector3(20, 1, 0)
+            {0, 0, 0, 1},
+            {19, 3, 0}
         )),
         collisionShapes[5],
-        btVector3(0.0f, 0.0f, 0.0f)
+        btZeroVec3
     );
     CI.m_restitution = 0.5f;
     objects.push_back(new Object(
         vertexVectors[0],
         indexVectors[0],
         texes[0],
-        {1.0f, 1.0f, 20.0f},
+        {1.0f, 2.0f, 18.0f},
         dynamicsWorld,
         CI
     ));
@@ -266,22 +279,42 @@ bool Graphics::Initialize(int width, int height) {
     CI = btRigidBody::btRigidBodyConstructionInfo(
         0,
         new btDefaultMotionState(btTransform(
-            btQuaternion(0, 0, 0, 1),
-            btVector3(-20, 1, 0)
+            {0, 0, 0, 1},
+            {-19, 3, 0}
         )),
         collisionShapes[5],
-        btVector3(0.0f, 0.0f, 0.0f)
+        btZeroVec3
     );
     CI.m_restitution = 0.5f;
     objects.push_back(new Object(
         vertexVectors[0],
         indexVectors[0],
         texes[0],
-        {1.0f, 1.0f, 20.0f},
+        {1.0f, 2.0f, 18.0f},
         dynamicsWorld,
         CI
     ));
     
+    
+    collisionShapes[6]->calculateLocalInertia(2.0f, inertia);
+    CI = btRigidBody::btRigidBodyConstructionInfo(
+        2,
+        new btDefaultMotionState(btTransform(
+            {0, 0, 0, 1},
+            {5, 2, 5}
+        )),
+        collisionShapes[6],
+        inertia
+    );
+    CI.m_restitution = 1.0f;
+    objects.push_back(new Object(
+        vertexVectors[3],
+        indexVectors[3],
+        texes[1],
+        {1.0f, 1.0f, 1.0f},
+        dynamicsWorld,
+        CI
+    ));
     
     
     return true;
@@ -290,12 +323,17 @@ bool Graphics::Initialize(int width, int height) {
 void Graphics::moveCylinder(float x, float z) {
     btTransform trans;
     objects[0]->GetRigidBody()->getMotionState()->getWorldTransform(trans);
-    trans.setOrigin(btVector3(trans.getOrigin().getX() + x, trans.getOrigin().getY(), trans.getOrigin().getZ() + z));
+    x += trans.getOrigin().getX();
+    z += trans.getOrigin().getZ();
+    clip(x, -17, 17);
+    clip(z, -17, 17);
+    trans.setOrigin(btVector3(x, trans.getOrigin().getY(), z));
     objects[0]->GetRigidBody()->getMotionState()->setWorldTransform(trans);
-    //std::cout << "Position: " << trans.getOrigin().getX() << ", " << trans.getOrigin().getY() << ", " << trans.getOrigin().getZ() << std::endl;
 }
 
 void Graphics::Update(float dt) {
+    moveCylinder(dx, dz);
+    dx = dz = 0;
     dynamicsWorld->stepSimulation(dt, 10);
     for(Object * object : objects) {
         object->Update(dt);
@@ -378,7 +416,7 @@ GLuint loadTexture(std::string filename) {
     
     return tex;
 }
-void loadMesh(std::string filename, std::vector<VertexData> & vertices, std::vector<unsigned int> & indices) {
+void loadMesh(std::string filename, std::vector<VertexData> & vertices, std::vector<unsigned int> & indices, btTriangleMesh * trimesh) {
     Assimp::Importer importer;
     const aiScene * scene = importer.ReadFile("objects/models/" + filename, aiProcess_Triangulate);
     
@@ -403,6 +441,10 @@ void loadMesh(std::string filename, std::vector<VertexData> & vertices, std::vec
             indices.push_back(face.mIndices[0]);
             indices.push_back(face.mIndices[1]);
             indices.push_back(face.mIndices[2]);
+            if(trimesh) {
+                const glm::vec3 & v0 = vertices[face.mIndices[0]].position, & v1 = vertices[face.mIndices[1]].position, & v2 = vertices[face.mIndices[2]].position;
+                trimesh->addTriangle({v0.x, v0.y, v0.z}, {v1.x, v1.y, v1.z}, {v2.x, v2.y, v2.z});
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 #include "object.h"
 #include <IL/il.h>
+#include <glm/gtx/quaternion.hpp>
 
 #include <fstream>
 
@@ -36,9 +37,10 @@ Object::~Object() {
 void Object::Update(float dt) {
     btTransform trans;
     rigidBody->getMotionState()->getWorldTransform(trans);
-    //Later hook up Bullet's quaternion rotations here, if needed
-    model = glm::translate(glm::vec3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) *
-            glm::rotate(0.0f, glm::vec3(0.0f, 1.0f, 0.0f)) *                                                           
+    const btVector3 & pos = trans.getOrigin();
+    const btQuaternion & rot = trans.getRotation();
+    model = glm::translate(glm::vec3{pos.getX(), pos.getY(), pos.getZ()}) *
+            glm::toMat4(glm::quat{rot.getX(), rot.getY(), rot.getZ(), rot.getW()}) *                                                      
             glm::scale(size);
 }
 

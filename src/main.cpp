@@ -6,7 +6,7 @@
 int main(int argc, char **argv) {
     std::cout << "Starting project..." << std::endl;
 
-    Engine * engine = new Engine("Project 8: Bullet Practice", 1920, 1080);
+    Engine * engine = new Engine("Project 8: Bullet Practice", 1600, 1000);
     if(!engine->Initialize()) {
         printf("The engine failed to start.\n");
         delete engine;

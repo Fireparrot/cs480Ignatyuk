@@ -1,10 +1,10 @@
-# PA7: Solar System
+# PA8: Bullet Practice
 
 Nikita Ignatyk and Roniel Padua
 
 # Description
 
-All files present are for PA7: Solar System.
+All files present are for PA8: Bullet Practice.
 
 # Building
 
@@ -24,45 +24,29 @@ In the folder containing the include, src, shaders and objects folders:
 
 Running the project requires no command line arguments, nor does it give out a prompt.
 
-Simply type in "./PA7".
+Simply type in "./PA8".
 
 # Libraries
 
-GLM, GLEW, SDL, Assimp and devIL are required libraries.
+GLM, GLEW, SDL, Assimp, devIL and Bullet are required libraries.
 
 Assimp must be installed using "sudo apt-get install libassimp-dev". This should place Assimp .h/.hpp files in /usr/include/assimp/ and libassimp.so in /usr/lib/x86_64-linux-gnu/
 
 devIL (outdated name: openIL) must be installed using "sudo apt-get install libdevil-dev". Its files should be installed in the same places as Assimp.
 
+Bullet should be installed using "sudo apt-get install libbullet-dev". This installs <i>both the includes and libraries</i> for Bullet. <b>This project depends on the includes and libraries for Bullet to be installed in the folders as above.</b>
+
 # Controls
 
 ## Keyboard
 
-The up/down/left/right arrow keys change the angle from which the camera looks.
-
-The j and k keys cycle between the nine planets to choose which one to focus on.
-
-The numpad + and - keys speed up and slow down the passage of time, respectively.
-
-The numpad * and / keys increase and decrease the scale of the distances between the sun and the planets (and the satellites around the planets, to a lesser degree).
+The up/down/left/right arrow keys move the cube.
 
 ## Mouse
 
-Moving the mouse changes the angle of the camera, like the arrow keys do.
+Moving the mouse moves the cube. The mouse may be invisibly bounded by the window, preventing movement in certain directions after the mouse travels too far.
 
-The scroll wheel zooms in and out.
+## EXTRA CREDIT
 
-## EXTRA CREDIT / ADDITIONS
-
-Configuration file.
-
-Live simulation speed adjustment.
-
-All gas planets have (wonky) rings.
-
-The scale of the distances between planets can be changed on the fly.
-
-Earth has clouds that travel over the surface, and lights that turn on at night and off at day.
-
-Satellites receive shadows from their parent planet.
+Along with a dynamic sphere, there is also a dynamic icosahedron, which is a triangular mesh inside Bullet.
 

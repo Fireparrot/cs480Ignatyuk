@@ -34,6 +34,8 @@ private:
     unsigned int m_DT;
     long long m_currentTimeMillis;
     bool m_running;
+    
+    signed int cylX, cylZ;
 };
 
 #endif // ENGINE_H

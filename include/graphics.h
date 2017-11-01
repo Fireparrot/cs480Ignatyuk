@@ -21,6 +21,7 @@ public:
     void Update(float dt);
     void Render();
     void moveCylinder(float x, float z);
+    float dx, dz;
 private:
     std::string ErrorString(GLenum error);
 
@@ -51,6 +52,6 @@ private:
 
     
 GLuint loadTexture(std::string filename);
-void loadMesh(std::string filename, std::vector<VertexData> & vertices, std::vector<unsigned int> & indices);
+void loadMesh(std::string filename, std::vector<VertexData> & vertices, std::vector<unsigned int> & indices, btTriangleMesh * trimesh = nullptr);
 
 #endif /* GRAPHICS_H */

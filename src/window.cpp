@@ -58,8 +58,8 @@ bool Window::Initialize(const std::string &name, int* width, int* height) {
     }
     
     //Grabs and hides the mouse
-    //SDL_ShowCursor(SDL_DISABLE);
-    //SDL_SetWindowGrab(gWindow, SDL_TRUE);
+    SDL_ShowCursor(SDL_DISABLE);
+    SDL_SetWindowGrab(gWindow, SDL_TRUE);
     
     return true;
 }

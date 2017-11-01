@@ -40,6 +40,8 @@ bool Engine::Initialize() {
     //Set the time
     m_currentTimeMillis = GetCurrentTimeMillis();
     
+    cylX = cylZ = 0;
+    
     //No errors
     return true;
 }
@@ -54,6 +56,8 @@ void Engine::Run() {
         //Check the keyboard input
         while(SDL_PollEvent(&m_event) != 0) {
             Keyboard();
+            m_graphics->dx += cylX*float(m_DT)*5/1000.f;
+            m_graphics->dz += cylZ*float(m_DT)*5/1000.f;
             Mouse();
         }
         
@@ -76,26 +80,42 @@ void Engine::Keyboard() {
         if(m_event.key.keysym.sym == SDLK_ESCAPE) {
           m_running = false;
         }
-        float cylX = 0, cylZ = 0;
         if(m_event.key.keysym.sym == SDLK_w) {
-            cylZ += m_DT*5/1000.f;
+            cylZ = 1;
         }
         if(m_event.key.keysym.sym == SDLK_s) {
-            cylZ -= m_DT*5/1000.f;
+            cylZ = -1;
         }
         if(m_event.key.keysym.sym == SDLK_a) {
-            cylX += m_DT*5/1000.f;
+            cylX = 1;
         }
         if(m_event.key.keysym.sym == SDLK_d) {
-            cylX -= m_DT*5/1000.f;
+            cylX = -1;
         }
-        m_graphics->moveCylinder(cylX, cylZ);
+    }
+    if(m_event.type == SDL_KEYUP) {
+        if(m_event.key.keysym.sym == SDLK_w) {
+            cylZ = 0;
+        }
+        if(m_event.key.keysym.sym == SDLK_s) {
+            cylZ = 0;
+        }
+        if(m_event.key.keysym.sym == SDLK_a) {
+            cylX = 0;
+        }
+        if(m_event.key.keysym.sym == SDLK_d) {
+            cylX = 0;
+        }
     }
 }
 void Engine::Mouse() {
     if(m_event.type == SDL_QUIT) {
         m_running = false;
         return;
+    }
+    if(m_event.type == SDL_MOUSEMOTION) {
+        m_graphics->dx -= m_event.motion.xrel/6.f * m_DT/1000;
+        m_graphics->dz -= m_event.motion.yrel/6.f * m_DT/1000;
     }
 }
 
