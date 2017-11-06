@@ -42,6 +42,7 @@ Bullet should be installed using "sudo apt-get install libbullet-dev". This inst
 
 The up/down/left/right arrow keys move the cube.
 
+e changes between per-fragment and per-vertex lighting.
 Keypad / and * decreases and increases (respectively) the spotlight's brightness.
 Keypad - and + decreases and increases (respectively) the spotlight's "size".
 r and f increases and decreases (respectively) all objects' ambient constant.
