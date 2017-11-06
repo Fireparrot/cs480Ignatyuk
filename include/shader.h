@@ -12,7 +12,7 @@ public:
     ~Shader();
     bool Initialize();
     void Enable();
-    bool AddShader(GLenum ShaderType);
+    bool AddShader(std::string filename, GLenum ShaderType);
     bool Finalize();
     GLint GetUniformLocation(const char* pUniformName);
 

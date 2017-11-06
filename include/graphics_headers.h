@@ -24,6 +24,8 @@
 
 #define INVALID_UNIFORM_LOCATION 0x7fffffff
 
+using usi = unsigned short int;
+
 struct VertexData {
   glm::vec3 position;
   glm::vec2 tex;

@@ -92,6 +92,43 @@ void Engine::Keyboard() {
         if(m_event.key.keysym.sym == SDLK_d) {
             cylX = -1;
         }
+        if(m_event.key.keysym.sym == SDLK_e) {
+            if(m_graphics->lighting == 1) {m_graphics->lighting = 4;}
+            else if(m_graphics->lighting == 2) {m_graphics->lighting = 3;}
+        }
+        if(m_event.key.keysym.sym == SDLK_KP_MULTIPLY) {
+            m_graphics->brightness += 80*m_DT/1000.f;
+        }
+        if(m_event.key.keysym.sym == SDLK_KP_DIVIDE) {
+            m_graphics->brightness -= 80*m_DT/1000.f;
+        }
+        if(m_event.key.keysym.sym == SDLK_KP_PLUS) {
+            float & full = m_graphics->full;
+            float da = sqrt(1 - full*full);
+            full -= da*m_DT/1000.f;
+            if(full < -0.98f) {full = -0.98f;}
+        }
+        if(m_event.key.keysym.sym == SDLK_KP_MINUS) {
+            float & full = m_graphics->full;
+            float da = sqrt(1 - full*full);
+            full += da*m_DT/1000.f;
+            if(full > 0.98f) {full = 0.98f;}
+        }
+        if(m_event.key.keysym.sym == SDLK_r) {
+            m_graphics->increaseAL( 0.2f*m_DT/1000.f);
+        }
+        if(m_event.key.keysym.sym == SDLK_f) {
+            m_graphics->increaseAL(-0.2f*m_DT/1000.f);
+        }
+        if(m_event.key.keysym.sym == SDLK_t) {
+            m_graphics->increaseSL( 0.2f*m_DT/1000.f);
+        }
+        if(m_event.key.keysym.sym == SDLK_g) {
+            m_graphics->increaseSL(-0.2f*m_DT/1000.f);
+        }
+        if(m_event.key.keysym.sym == SDLK_c) {
+            m_graphics->cyanLight = !m_graphics->cyanLight;
+        }
     }
     if(m_event.type == SDL_KEYUP) {
         if(m_event.key.keysym.sym == SDLK_w) {
@@ -114,8 +151,8 @@ void Engine::Mouse() {
         return;
     }
     if(m_event.type == SDL_MOUSEMOTION) {
-        m_graphics->dx -= m_event.motion.xrel/6.f * m_DT/1000;
-        m_graphics->dz -= m_event.motion.yrel/6.f * m_DT/1000;
+        m_graphics->dx -= m_event.motion.xrel/1.f * m_DT/1000;
+        m_graphics->dz -= m_event.motion.yrel/1.f * m_DT/1000;
     }
 }
 

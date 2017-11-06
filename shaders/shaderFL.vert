@@ -13,12 +13,14 @@ out VD {
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
+uniform mat4 normalMatrix;
 
 void main(void) {
 	vec4 v = vec4(v_position, 1.0);
 	gl_Position = (projectionMatrix * viewMatrix * modelMatrix) * v;
 	vs_out.worldPos = (modelMatrix * v).xyz;
 	vs_out.uv = v_uv;
-	vs_out.norm = v_normal;
+	vs_out.norm = (normalMatrix * vec4(v_normal, 0)).xyz;
+	vs_out.norm /= length(vs_out.norm);
 }
 

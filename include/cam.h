@@ -8,8 +8,10 @@ public:
     Cam();
     ~Cam();
     bool Initialize(int w, int h);
-    glm::mat4 GetProjection();
-    glm::mat4 GetView();
+    glm::mat4 GetProjection() const;
+    glm::mat4 GetView() const;
+    glm::vec3 GetPosition() const;
+    glm::vec3 GetTarget() const;
     
     //Sets the position of the camera, and updates its view matrix accordingly (keeping the camera's points-to position the same)
     void SetPosition(glm::vec3 pos);

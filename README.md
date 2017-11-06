@@ -1,10 +1,10 @@
-# PA8: Bullet Practice
+# PA9: Bullet + Lighting
 
 Nikita Ignatyk and Roniel Padua
 
 # Description
 
-All files present are for PA8: Bullet Practice.
+All files present are for PA9: Bullet + Lighting.
 
 # Building
 
@@ -24,7 +24,7 @@ In the folder containing the include, src, shaders and objects folders:
 
 Running the project requires no command line arguments, nor does it give out a prompt.
 
-Simply type in "./PA8".
+Simply type in "./PA9".
 
 # Libraries
 
@@ -42,11 +42,18 @@ Bullet should be installed using "sudo apt-get install libbullet-dev". This inst
 
 The up/down/left/right arrow keys move the cube.
 
+Keypad / and * decreases and increases (respectively) the spotlight's brightness.
+Keypad - and + decreases and increases (respectively) the spotlight's "size".
+r and f increases and decreases (respectively) all objects' ambient constant.
+t and g increases and decreases (respectively) the ball's specular constant.
+c switches between a cyan light and a white light for the spotlight.
+
 ## Mouse
 
 Moving the mouse moves the cube. The mouse may be invisibly bounded by the window, preventing movement in certain directions after the mouse travels too far.
 
-## EXTRA CREDIT
+## NOTE
 
-Along with a dynamic sphere, there is also a dynamic icosahedron, which is a triangular mesh inside Bullet.
+If you launch any of the two mobile objects off the board, it's your fault ;P
+Restart the program in that case, if you want them back.
 

@@ -14,13 +14,10 @@ bool Cam::Initialize(int w, int h) {
     return true;
 }
 
-glm::mat4 Cam::GetProjection() {
-  return projection;
-}
-
-glm::mat4 Cam::GetView() {
-  return view;
-}
+glm::mat4 Cam::GetProjection() const {return projection;}
+glm::mat4 Cam::GetView() const {return view;}
+glm::vec3 Cam::GetPosition() const {return position;}
+glm::vec3 Cam::GetTarget() const {return target;}
 
 void Cam::SetPosition(glm::vec3 pos) {position = pos; UpdateMat();}
 void Cam::SetTarget(glm::vec3 tar) {target = tar; UpdateMat();}

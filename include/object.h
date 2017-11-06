@@ -20,6 +20,8 @@ private:
     glm::vec3 size;
     const std::vector<VertexData> * vertices;
     const std::vector<unsigned int> * indices;
+    glm::vec3 ka, kd, ks;
+    float shininess;
     GLuint VB;
     GLuint IB;
     GLuint tex;
@@ -32,6 +34,10 @@ public:
     void Render();
 
     glm::mat4 GetModel() const;
+    glm::vec3 & GetKa();
+    glm::vec3 & GetKd();
+    glm::vec3 & GetKs();
+    float & GetShininess();
     GLuint GetTexture() const;
     btRigidBody * GetRigidBody();
 };

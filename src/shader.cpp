@@ -29,14 +29,11 @@ bool Shader::Initialize() {
 }
 
 // Use this method to add shaders to the program. When finished - call finalize()
-bool Shader::AddShader(GLenum ShaderType) {
+bool Shader::AddShader(std::string filename, GLenum ShaderType) {
     std::string s;
-    std::string filename;
-    if(ShaderType == GL_VERTEX_SHADER) {filename = "shaders/shader.vert";}
-    else {filename = "shaders/shader.frag";}
     
     std::ostringstream temp;
-    std::ifstream file(filename);
+    std::ifstream file("shaders/" + filename);
     if(!file.is_open()) {
         std::cerr << "Error opening shader file!" << std::endl;
         return false;

@@ -8,7 +8,12 @@ void clip(float & x, float min, float max) {
     if(x > max) {x = max;}
 }
 
-Graphics::Graphics() {}
+Graphics::Graphics():
+    lighting(3),
+    brightness(300.f),
+    full(0.8f),
+    cyanLight(false)
+{}
 
 Graphics::~Graphics() {
     for(Object * object : objects) {delete object;}
@@ -54,46 +59,109 @@ bool Graphics::Initialize(int width, int height) {
     // Init Camera
     m_camera = new Cam();
     if(!m_camera->Initialize(width, height)) {
-        printf("Camera Failed to Initialize\n");
+        printf("Camera failed to Initialize\n");
         return false;
     }
     
     // Set up the shaders
-    m_shader = new Shader();
-    if(!m_shader->Initialize()) {
-        printf("Shader Failed to Initialize\n");
+    shaderFL = new Shader();
+    shaderVL = new Shader();
+    if(!shaderFL->Initialize()) {
+        printf("Shader (fragment lighting) failed to Initialize\n");
+        return false;
+    }
+    if(!shaderFL->AddShader("shaderFL.vert", GL_VERTEX_SHADER)) {
+        printf("Vertex Shader (fragment lighting) failed to Initialize\n");
+        return false;
+    }
+    if(!shaderFL->AddShader("shaderFL.frag", GL_FRAGMENT_SHADER)) {
+        printf("Fragment Shader (fragment lighting) failed to Initialize\n");
+        return false;
+    }
+    if(!shaderFL->Finalize()) {
+        printf("Program (fragment lighting) failed to Finalize\n");
         return false;
     }
     
-    // Add the vertex shader
-    if(!m_shader->AddShader(GL_VERTEX_SHADER)) {
-        printf("Vertex Shader failed to Initialize\n");
+    if(!shaderVL->Initialize()) {
+        printf("Shader (vertex lighting) failed to Initialize\n");
+        return false;
+    }
+    if(!shaderVL->AddShader("shaderVL.vert", GL_VERTEX_SHADER)) {
+        printf("Vertex Shader (vertex lighting) failed to Initialize\n");
+        return false;
+    }
+    if(!shaderVL->AddShader("shaderVL.frag", GL_FRAGMENT_SHADER)) {
+        printf("Fragment Shader (vertex lighting) failed to Initialize\n");
+        return false;
+    }
+    if(!shaderVL->Finalize()) {
+        printf("Program (vertex lighting) failed to Finalize\n");
         return false;
     }
     
-    // Add the fragment shader
-    if(!m_shader->AddShader(GL_FRAGMENT_SHADER)) {
-        printf("Fragment Shader failed to Initialize\n");
-        return false;
-    }
-    
-    // Connect the program
-    if(!m_shader->Finalize()) {
-        printf("Program failed to Finalize\n");
-        return false;
-    }
 
-    m_projectionMatrix = GetUniformLocation("projectionMatrix");
-    if(m_projectionMatrix == INVALID_UNIFORM_LOCATION) {return false;}
+    projMatFL = GetUniformLocation("projectionMatrix", shaderFL);
+    if(projMatFL == INVALID_UNIFORM_LOCATION) {return false;}
+    viewMatFL = GetUniformLocation("viewMatrix", shaderFL);
+    if(viewMatFL == INVALID_UNIFORM_LOCATION) {return false;}
+    modelMatFL = GetUniformLocation("modelMatrix", shaderFL);
+    if(modelMatFL == INVALID_UNIFORM_LOCATION) {return false;}
+    normalMatFL = GetUniformLocation("normalMatrix", shaderFL);
+    if(normalMatFL == INVALID_UNIFORM_LOCATION) {return false;}
+    texFL = GetUniformLocation("tex", shaderFL);
+    if(texFL == INVALID_UNIFORM_LOCATION) {return false;}
+    camPosFL = GetUniformLocation("camPos", shaderFL);
+    if(camPosFL == INVALID_UNIFORM_LOCATION) {return false;}
+    kaFL = GetUniformLocation("ka", shaderFL);
+    if(kaFL == INVALID_UNIFORM_LOCATION) {return false;}
+    kdFL = GetUniformLocation("kd", shaderFL);
+    if(kdFL == INVALID_UNIFORM_LOCATION) {return false;}
+    ksFL = GetUniformLocation("ks", shaderFL);
+    if(ksFL == INVALID_UNIFORM_LOCATION) {return false;}
+    shininessFL = GetUniformLocation("shininess", shaderFL);
+    if(shininessFL == INVALID_UNIFORM_LOCATION) {return false;}
+    spotlightPosFL = GetUniformLocation("spotlightPos", shaderFL);
+    if(spotlightPosFL == INVALID_UNIFORM_LOCATION) {return false;}
+    spotlightDirFL = GetUniformLocation("spotlightDir", shaderFL);
+    if(spotlightDirFL == INVALID_UNIFORM_LOCATION) {return false;}
+    spotlightFullFL = GetUniformLocation("spotlightFull", shaderFL);
+    if(spotlightFullFL == INVALID_UNIFORM_LOCATION) {return false;}
+    spotlightFadeFL = GetUniformLocation("spotlightFade", shaderFL);
+    if(spotlightFadeFL == INVALID_UNIFORM_LOCATION) {return false;}
+    spotlightBrightnessFL = GetUniformLocation("spotlightBrightness", shaderFL);
+    if(spotlightBrightnessFL == INVALID_UNIFORM_LOCATION) {return false;}
     
-    m_viewMatrix = GetUniformLocation("viewMatrix");
-    if(m_viewMatrix == INVALID_UNIFORM_LOCATION) {return false;}
-    
-    m_modelMatrix = GetUniformLocation("modelMatrix");
-    if(m_modelMatrix == INVALID_UNIFORM_LOCATION) {return false;}
-    
-    m_tex = GetUniformLocation("tex");
-    if(m_tex == INVALID_UNIFORM_LOCATION) {return false;}
+    projMatVL = GetUniformLocation("projectionMatrix", shaderVL);
+    if(projMatVL == INVALID_UNIFORM_LOCATION) {return false;}
+    viewMatVL = GetUniformLocation("viewMatrix", shaderVL);
+    if(viewMatVL == INVALID_UNIFORM_LOCATION) {return false;}
+    modelMatVL = GetUniformLocation("modelMatrix", shaderVL);
+    if(modelMatVL == INVALID_UNIFORM_LOCATION) {return false;}
+    normalMatVL = GetUniformLocation("normalMatrix", shaderVL);
+    if(normalMatVL == INVALID_UNIFORM_LOCATION) {return false;}
+    texVL = GetUniformLocation("tex", shaderVL);
+    if(texVL == INVALID_UNIFORM_LOCATION) {return false;}
+    camPosVL = GetUniformLocation("camPos", shaderVL);
+    if(camPosVL == INVALID_UNIFORM_LOCATION) {return false;}
+    kaVL = GetUniformLocation("ka", shaderVL);
+    if(kaVL == INVALID_UNIFORM_LOCATION) {return false;}
+    kdVL = GetUniformLocation("kd", shaderVL);
+    if(kdVL == INVALID_UNIFORM_LOCATION) {return false;}
+    ksVL = GetUniformLocation("ks", shaderVL);
+    if(ksVL == INVALID_UNIFORM_LOCATION) {return false;}
+    shininessVL = GetUniformLocation("shininess", shaderVL);
+    if(shininessVL == INVALID_UNIFORM_LOCATION) {return false;}
+    spotlightPosVL = GetUniformLocation("spotlightPos", shaderVL);
+    if(spotlightPosVL == INVALID_UNIFORM_LOCATION) {return false;}
+    spotlightDirVL = GetUniformLocation("spotlightDir", shaderVL);
+    if(spotlightDirVL == INVALID_UNIFORM_LOCATION) {return false;}
+    spotlightFullVL = GetUniformLocation("spotlightFull", shaderVL);
+    if(spotlightFullVL == INVALID_UNIFORM_LOCATION) {return false;}
+    spotlightFadeVL = GetUniformLocation("spotlightFade", shaderVL);
+    if(spotlightFadeVL == INVALID_UNIFORM_LOCATION) {return false;}
+    spotlightBrightnessVL = GetUniformLocation("spotlightBrightness", shaderVL);
+    if(spotlightBrightnessVL == INVALID_UNIFORM_LOCATION) {return false;}
     
     //enable depth testing
     glEnable(GL_DEPTH_TEST);
@@ -148,6 +216,7 @@ bool Graphics::Initialize(int width, int height) {
         collisionShapes[0],
         btZeroVec3
     );
+    CI.m_restitution = 0.2f;
     objects.push_back(new Object(
         vertexVectors[0],
         indexVectors[0],
@@ -330,6 +399,14 @@ void Graphics::moveCylinder(float x, float z) {
     trans.setOrigin(btVector3(x, trans.getOrigin().getY(), z));
     objects[0]->GetRigidBody()->getMotionState()->setWorldTransform(trans);
 }
+void Graphics::increaseAL(float f) {
+    for(Object * object : objects) {
+        object->GetKa() += glm::vec3(f, f, f);
+    }
+}
+void Graphics::increaseSL(float f) {
+    objects[2]->GetKs() += glm::vec3(f, f, f);
+}
 
 void Graphics::Update(float dt) {
     moveCylinder(dx, dz);
@@ -345,18 +422,71 @@ void Graphics::Render() {
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    //Start the correct program
-    m_shader->Enable();
+    //Start the correct shader program
+    if(lighting == 3) {
+        shaderFL->Enable();
+        projMat = projMatFL;
+        viewMat = viewMatFL;
+        modelMat = modelMatFL;
+        normalMat = normalMatFL;
+        tex = texFL;
+        camPos = camPosFL;
+        ka = kaFL;
+        kd = kdFL;
+        ks = ksFL;
+        shininess = shininessFL;
+        spotlightPos = spotlightPosFL;
+        spotlightDir = spotlightDirFL;
+        spotlightFull = spotlightFullFL;
+        spotlightFade = spotlightFadeFL;
+        spotlightBrightness = spotlightBrightnessFL;
+        lighting = 1;
+    } else if(lighting == 4) {
+        shaderVL->Enable();
+        projMat = projMatVL;
+        viewMat = viewMatVL;
+        modelMat = modelMatVL;
+        normalMat = normalMatVL;
+        tex = texVL;
+        camPos = camPosVL;
+        ka = kaVL;
+        kd = kdVL;
+        ks = ksVL;
+        shininess = shininessVL;
+        spotlightPos = spotlightPosVL;
+        spotlightDir = spotlightDirVL;
+        spotlightFull = spotlightFullVL;
+        spotlightFade = spotlightFadeVL;
+        spotlightBrightness = spotlightBrightnessVL;
+        tex = texVL;
+        camPos = camPosVL;
+        lighting = 2;
+    }
     
     //Send in the projection and view to the shader
-    glUniformMatrix4fv(m_projectionMatrix, 1, GL_FALSE, glm::value_ptr(m_camera->GetProjection())); 
-    glUniformMatrix4fv(m_viewMatrix, 1, GL_FALSE, glm::value_ptr(m_camera->GetView()));
+    glUniformMatrix4fv(projMat, 1, GL_FALSE, glm::value_ptr(m_camera->GetProjection())); 
+    glUniformMatrix4fv(viewMat, 1, GL_FALSE, glm::value_ptr(m_camera->GetView()));
     glActiveTexture(GL_TEXTURE0);
-    glUniform1i(m_tex, 0);
+    glUniform1i(tex, 0);
+    glm::vec3 ooo(0.5f, 1, 1);
+    glUniform3fv(camPos, 1, glm::value_ptr(m_camera->GetPosition()));
+    btTransform sphereTrans;
+    objects[2]->GetRigidBody()->getMotionState()->getWorldTransform(sphereTrans);
+    btVector3 spherePos = sphereTrans.getOrigin();
+    glUniform3fv(spotlightPos, 1, glm::value_ptr(glm::vec3(spherePos.getX(), spherePos.getY() + 20, spherePos.getZ())));
+    glUniform3fv(spotlightDir, 1, glm::value_ptr(glm::vec3(0, -1, 0)));
+    glUniform1f(spotlightFull, full);
+    glUniform1f(spotlightFade, full-0.4f);
+    glUniform3fv(spotlightBrightness, 1, glm::value_ptr(brightness*glm::vec3(cyanLight ? 0.5f : 1.f, 1.f, 1.f)));
     
     //Render the objects
     for(usi i = 0; i < objects.size(); ++i) {
-        glUniformMatrix4fv(m_modelMatrix, 1, GL_FALSE, glm::value_ptr(objects[i]->GetModel()));
+        glUniformMatrix4fv(modelMat, 1, GL_FALSE, glm::value_ptr(objects[i]->GetModel()));
+        glUniformMatrix4fv(normalMat, 1, GL_FALSE, glm::value_ptr(glm::transpose(glm::inverse(objects[i]->GetModel()))));
+        glUniform3fv(ka, 1, glm::value_ptr(objects[i]->GetKa()));
+        glUniform3fv(kd, 1, glm::value_ptr(objects[i]->GetKd()));
+        glUniform3fv(ks, 1, glm::value_ptr(objects[i]->GetKs()));
+        glUniform1f(shininess, objects[i]->GetShininess());
         glBindTexture(GL_TEXTURE_2D, objects[i]->GetTexture());
         objects[i]->Render();
     }
@@ -385,8 +515,8 @@ std::string Graphics::ErrorString(GLenum error) {
     }
 }
 
-GLint Graphics::GetUniformLocation(std::string name) const {
-    GLint loc = m_shader->GetUniformLocation(name.c_str());
+GLint Graphics::GetUniformLocation(std::string name, Shader * shader) const {
+    GLint loc = shader->GetUniformLocation(name.c_str());
     if(loc == INVALID_UNIFORM_LOCATION) {
         std::cout << name << " not found" << std::endl;
     }

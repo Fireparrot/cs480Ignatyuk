@@ -22,11 +22,17 @@ public:
     void Render();
     void moveCylinder(float x, float z);
     float dx, dz;
+    usi lighting;
+    float full;
+    float brightness;
+    void increaseAL(float f);
+    void increaseSL(float f);
+    bool cyanLight;
 private:
     std::string ErrorString(GLenum error);
 
     Cam * m_camera;
-    Shader * m_shader;
+    Shader * shaderFL, * shaderVL;
     
     std::vector<Object *> objects;
     std::vector<std::vector<VertexData> *> vertexVectors;
@@ -37,11 +43,10 @@ private:
     std::vector<btRigidBody *> rigidBodies;
 
     //These are the shader uniform location variables
-    GLint m_projectionMatrix;
-    GLint m_viewMatrix;
-    GLint m_modelMatrix;
-    GLint m_tex;
-    GLint GetUniformLocation(std::string name) const;
+    GLint projMat  , viewMat  , modelMat  , normalMat  , tex  , camPos  , ka  , kd  , ks  , shininess  , spotlightPos  , spotlightDir  , spotlightFull  , spotlightFade  , spotlightBrightness  ;
+    GLint projMatFL, viewMatFL, modelMatFL, normalMatFL, texFL, camPosFL, kaFL, kdFL, ksFL, shininessFL, spotlightPosFL, spotlightDirFL, spotlightFullFL, spotlightFadeFL, spotlightBrightnessFL;
+    GLint projMatVL, viewMatVL, modelMatVL, normalMatVL, texVL, camPosVL, kaVL, kdVL, ksVL, shininessVL, spotlightPosVL, spotlightDirVL, spotlightFullVL, spotlightFadeVL, spotlightBrightnessVL;
+    GLint GetUniformLocation(std::string name, Shader * shader) const;
     
     btBroadphaseInterface * broadphase;
     btDefaultCollisionConfiguration * collisionConfiguration;

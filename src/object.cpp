@@ -8,6 +8,10 @@
 Object::Object(const std::vector<VertexData> * vertices_, const std::vector<unsigned int> * indices_, GLuint tex_, glm::vec3 size_, btDiscreteDynamicsWorld * dynamicsWorld_, const btRigidBody::btRigidBodyConstructionInfo & CI, bool isKinematic):
     vertices(vertices_),
     indices(indices_),
+    ka{0.2f, 0.2f, 0.2f},
+    kd{1.0f, 1.0f, 1.0f},
+    ks{0.2f, 0.2f, 0.2f},
+    shininess(5.f),
     tex(tex_),
     size(size_),
     dynamicsWorld(dynamicsWorld_)
@@ -44,9 +48,11 @@ void Object::Update(float dt) {
             glm::scale(size);
 }
 
-glm::mat4 Object::GetModel() const {
-    return model;
-}
+glm::mat4 Object::GetModel() const {return model;}
+glm::vec3 & Object::GetKa() {return ka;}
+glm::vec3 & Object::GetKd() {return kd;}
+glm::vec3 & Object::GetKs() {return ks;}
+float & Object::GetShininess() {return shininess;}
 GLuint Object::GetTexture() const {return tex;}
 btRigidBody * Object::GetRigidBody() {return rigidBody;}
 
