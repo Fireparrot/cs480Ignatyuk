@@ -6,6 +6,12 @@ Nikita Ignatyk and Roniel Padua
 
 All files present are for PA9: Bullet + Lighting.
 
+## Lighting
+
+There is a point light, a directional (parallel) light, and a spot light.
+
+The spotlight follows the ball (and can switch color), and the others are locked in their state.
+
 # Building
 
 In the folder containing the include, src, shaders and objects folders:
@@ -52,6 +58,14 @@ c switches between a cyan light and a white light for the spotlight.
 ## Mouse
 
 Moving the mouse moves the cube. The mouse may be invisibly bounded by the window, preventing movement in certain directions after the mouse travels too far.
+
+## The Board
+
+The ball and icosahedron are mobile objets that can be hit with the cube (or each other).
+
+Both bounce slightly off walls and the cube, and bounce a lot off the central cylinder.
+
+The icosahedron is a custom mesh loaded into Bullet (with a mass lower than the sphere's).
 
 ## NOTE
 

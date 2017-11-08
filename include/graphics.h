@@ -43,9 +43,24 @@ private:
     std::vector<btRigidBody *> rigidBodies;
 
     //These are the shader uniform location variables
-    GLint projMat  , viewMat  , modelMat  , normalMat  , tex  , camPos  , ka  , kd  , ks  , shininess  , spotlightPos  , spotlightDir  , spotlightFull  , spotlightFade  , spotlightBrightness  ;
-    GLint projMatFL, viewMatFL, modelMatFL, normalMatFL, texFL, camPosFL, kaFL, kdFL, ksFL, shininessFL, spotlightPosFL, spotlightDirFL, spotlightFullFL, spotlightFadeFL, spotlightBrightnessFL;
-    GLint projMatVL, viewMatVL, modelMatVL, normalMatVL, texVL, camPosVL, kaVL, kdVL, ksVL, shininessVL, spotlightPosVL, spotlightDirVL, spotlightFullVL, spotlightFadeVL, spotlightBrightnessVL;
+    GLint projMat  , viewMat  , modelMat  , normalMat  ,
+          tex  , camPos  , ka  , kd  , ks  , shininess  ,
+          spotlightPos  , spotlightDir  , spotlightFull  , spotlightFade  , spotlightBrightness  ,
+          pointlightPos  , pointlightBrightness  ,
+          dirlightDir  , dirlightBrightness  ;
+          
+    GLint projMatFL, viewMatFL, modelMatFL, normalMatFL,
+          texFL, camPosFL, kaFL, kdFL, ksFL, shininessFL,
+          spotlightPosFL, spotlightDirFL, spotlightFullFL, spotlightFadeFL, spotlightBrightnessFL,
+          pointlightPosFL, pointlightBrightnessFL,
+          dirlightDirFL, dirlightBrightnessFL;
+          
+    GLint projMatVL, viewMatVL, modelMatVL, normalMatVL,
+          texVL, camPosVL, kaVL, kdVL, ksVL, shininessVL,
+          spotlightPosVL, spotlightDirVL, spotlightFullVL, spotlightFadeVL, spotlightBrightnessVL,
+          pointlightPosVL, pointlightBrightnessVL,
+          dirlightDirVL, dirlightBrightnessVL;
+          
     GLint GetUniformLocation(std::string name, Shader * shader) const;
     
     btBroadphaseInterface * broadphase;

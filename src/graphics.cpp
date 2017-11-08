@@ -109,6 +109,7 @@ bool Graphics::Initialize(int width, int height) {
     if(modelMatFL == INVALID_UNIFORM_LOCATION) {return false;}
     normalMatFL = GetUniformLocation("normalMatrix", shaderFL);
     if(normalMatFL == INVALID_UNIFORM_LOCATION) {return false;}
+    
     texFL = GetUniformLocation("tex", shaderFL);
     if(texFL == INVALID_UNIFORM_LOCATION) {return false;}
     camPosFL = GetUniformLocation("camPos", shaderFL);
@@ -121,6 +122,7 @@ bool Graphics::Initialize(int width, int height) {
     if(ksFL == INVALID_UNIFORM_LOCATION) {return false;}
     shininessFL = GetUniformLocation("shininess", shaderFL);
     if(shininessFL == INVALID_UNIFORM_LOCATION) {return false;}
+    
     spotlightPosFL = GetUniformLocation("spotlightPos", shaderFL);
     if(spotlightPosFL == INVALID_UNIFORM_LOCATION) {return false;}
     spotlightDirFL = GetUniformLocation("spotlightDir", shaderFL);
@@ -130,7 +132,19 @@ bool Graphics::Initialize(int width, int height) {
     spotlightFadeFL = GetUniformLocation("spotlightFade", shaderFL);
     if(spotlightFadeFL == INVALID_UNIFORM_LOCATION) {return false;}
     spotlightBrightnessFL = GetUniformLocation("spotlightBrightness", shaderFL);
+    
     if(spotlightBrightnessFL == INVALID_UNIFORM_LOCATION) {return false;}
+    pointlightPosFL = GetUniformLocation("pointlightPos", shaderFL);
+    if(pointlightPosFL == INVALID_UNIFORM_LOCATION) {return false;}
+    pointlightBrightnessFL = GetUniformLocation("pointlightBrightness", shaderFL);
+    
+    if(pointlightBrightnessFL == INVALID_UNIFORM_LOCATION) {return false;}
+    dirlightDirFL = GetUniformLocation("dirlightDir", shaderFL);
+    if(dirlightDirFL == INVALID_UNIFORM_LOCATION) {return false;}
+    dirlightBrightnessFL = GetUniformLocation("dirlightBrightness", shaderFL);
+    if(dirlightBrightnessFL == INVALID_UNIFORM_LOCATION) {return false;}
+    
+    
     
     projMatVL = GetUniformLocation("projectionMatrix", shaderVL);
     if(projMatVL == INVALID_UNIFORM_LOCATION) {return false;}
@@ -140,6 +154,7 @@ bool Graphics::Initialize(int width, int height) {
     if(modelMatVL == INVALID_UNIFORM_LOCATION) {return false;}
     normalMatVL = GetUniformLocation("normalMatrix", shaderVL);
     if(normalMatVL == INVALID_UNIFORM_LOCATION) {return false;}
+    
     texVL = GetUniformLocation("tex", shaderVL);
     if(texVL == INVALID_UNIFORM_LOCATION) {return false;}
     camPosVL = GetUniformLocation("camPos", shaderVL);
@@ -152,6 +167,7 @@ bool Graphics::Initialize(int width, int height) {
     if(ksVL == INVALID_UNIFORM_LOCATION) {return false;}
     shininessVL = GetUniformLocation("shininess", shaderVL);
     if(shininessVL == INVALID_UNIFORM_LOCATION) {return false;}
+    
     spotlightPosVL = GetUniformLocation("spotlightPos", shaderVL);
     if(spotlightPosVL == INVALID_UNIFORM_LOCATION) {return false;}
     spotlightDirVL = GetUniformLocation("spotlightDir", shaderVL);
@@ -162,6 +178,16 @@ bool Graphics::Initialize(int width, int height) {
     if(spotlightFadeVL == INVALID_UNIFORM_LOCATION) {return false;}
     spotlightBrightnessVL = GetUniformLocation("spotlightBrightness", shaderVL);
     if(spotlightBrightnessVL == INVALID_UNIFORM_LOCATION) {return false;}
+    
+    pointlightPosVL = GetUniformLocation("pointlightPos", shaderVL);
+    if(pointlightPosVL == INVALID_UNIFORM_LOCATION) {return false;}
+    pointlightBrightnessVL = GetUniformLocation("pointlightBrightness", shaderVL);
+    if(pointlightBrightnessVL == INVALID_UNIFORM_LOCATION) {return false;}
+    
+    dirlightDirVL = GetUniformLocation("dirlightDir", shaderVL);
+    if(dirlightDirVL == INVALID_UNIFORM_LOCATION) {return false;}
+    dirlightBrightnessVL = GetUniformLocation("dirlightBrightness", shaderVL);
+    if(dirlightBrightnessVL == INVALID_UNIFORM_LOCATION) {return false;}
     
     //enable depth testing
     glEnable(GL_DEPTH_TEST);
@@ -440,6 +466,10 @@ void Graphics::Render() {
         spotlightFull = spotlightFullFL;
         spotlightFade = spotlightFadeFL;
         spotlightBrightness = spotlightBrightnessFL;
+        pointlightPos = pointlightPosFL;
+        pointlightBrightness = pointlightBrightnessFL;
+        dirlightDir = dirlightDirFL;
+        dirlightBrightness = dirlightBrightnessFL;
         lighting = 1;
     } else if(lighting == 4) {
         shaderVL->Enable();
@@ -458,8 +488,10 @@ void Graphics::Render() {
         spotlightFull = spotlightFullVL;
         spotlightFade = spotlightFadeVL;
         spotlightBrightness = spotlightBrightnessVL;
-        tex = texVL;
-        camPos = camPosVL;
+        pointlightPos = pointlightPosVL;
+        pointlightBrightness = pointlightBrightnessVL;
+        dirlightDir = dirlightDirVL;
+        dirlightBrightness = dirlightBrightnessVL;
         lighting = 2;
     }
     
@@ -468,16 +500,22 @@ void Graphics::Render() {
     glUniformMatrix4fv(viewMat, 1, GL_FALSE, glm::value_ptr(m_camera->GetView()));
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(tex, 0);
-    glm::vec3 ooo(0.5f, 1, 1);
     glUniform3fv(camPos, 1, glm::value_ptr(m_camera->GetPosition()));
+    
     btTransform sphereTrans;
     objects[2]->GetRigidBody()->getMotionState()->getWorldTransform(sphereTrans);
     btVector3 spherePos = sphereTrans.getOrigin();
     glUniform3fv(spotlightPos, 1, glm::value_ptr(glm::vec3(spherePos.getX(), spherePos.getY() + 20, spherePos.getZ())));
     glUniform3fv(spotlightDir, 1, glm::value_ptr(glm::vec3(0, -1, 0)));
     glUniform1f(spotlightFull, full);
-    glUniform1f(spotlightFade, full-0.4f);
+    glUniform1f(spotlightFade, full-0.1f);
     glUniform3fv(spotlightBrightness, 1, glm::value_ptr(brightness*glm::vec3(cyanLight ? 0.5f : 1.f, 1.f, 1.f)));
+    
+    glUniform3fv(pointlightPos, 1, glm::value_ptr(glm::vec3(15.f, 5.f, 15.f)));
+    glUniform3fv(pointlightBrightness, 1, glm::value_ptr(glm::vec3(15.f, 5.f, 0.f)));
+    
+    glUniform3fv(dirlightDir, 1, glm::value_ptr(glm::vec3(-1.f/3, -2.f/3, -2.f/3)));
+    glUniform3fv(dirlightBrightness, 1, glm::value_ptr(glm::vec3(0.2f, 0.1f, 0.1f)));
     
     //Render the objects
     for(usi i = 0; i < objects.size(); ++i) {
