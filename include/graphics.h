@@ -10,6 +10,7 @@
 #include <IL/il.h>
 #include <vector>
 #include <string>
+#include <fstream>
 
 using namespace std;
 
@@ -20,7 +21,6 @@ public:
     bool Initialize(int width, int height);
     void Update(float dt);
     void Render();
-    void moveCylinder(float x, float z);
     float dx, dz;
     usi lighting;
     float full;
@@ -28,6 +28,25 @@ public:
     void increaseAL(float f);
     void increaseSL(float f);
     bool cyanLight;
+    bool plungerHeld,
+         flipperLeftHeld,
+         flipperRightHeld;
+    float plungerHeight,
+          flipperLeftRot,
+          flipperRightRot;
+    float cameraMove;
+    float cameraTheta;
+    float bumperBumpCenter, bumperBumpLeft, bumperBumpRight, padBumpLeft, padBumpRight;
+    int scoreCode;
+    float score;
+    int lives;
+    std::string playerName;
+    void resetLife();
+    bool addBallActive;
+    void deactivateAddBall();
+    void activateAddBall();
+    std::fstream toptenFile;
+    std::vector<std::pair<std::string, float>> topten;
 private:
     std::string ErrorString(GLenum error);
 
@@ -47,19 +66,22 @@ private:
           tex  , camPos  , ka  , kd  , ks  , shininess  ,
           spotlightPos  , spotlightDir  , spotlightFull  , spotlightFade  , spotlightBrightness  ,
           pointlightPos  , pointlightBrightness  ,
-          dirlightDir  , dirlightBrightness  ;
+          dirlightDir  , dirlightBrightness  ,
+          bumped;
           
     GLint projMatFL, viewMatFL, modelMatFL, normalMatFL,
           texFL, camPosFL, kaFL, kdFL, ksFL, shininessFL,
           spotlightPosFL, spotlightDirFL, spotlightFullFL, spotlightFadeFL, spotlightBrightnessFL,
           pointlightPosFL, pointlightBrightnessFL,
-          dirlightDirFL, dirlightBrightnessFL;
+          dirlightDirFL, dirlightBrightnessFL,
+          bumpedFL;
           
     GLint projMatVL, viewMatVL, modelMatVL, normalMatVL,
           texVL, camPosVL, kaVL, kdVL, ksVL, shininessVL,
           spotlightPosVL, spotlightDirVL, spotlightFullVL, spotlightFadeVL, spotlightBrightnessVL,
           pointlightPosVL, pointlightBrightnessVL,
-          dirlightDirVL, dirlightBrightnessVL;
+          dirlightDirVL, dirlightBrightnessVL,
+          bumpedVL;
           
     GLint GetUniformLocation(std::string name, Shader * shader) const;
     
@@ -68,6 +90,8 @@ private:
     btCollisionDispatcher * dispatcher;
     btSequentialImpulseConstraintSolver * solver;
     btDiscreteDynamicsWorld * dynamicsWorld;
+    
+    void makeObject(btQuaternion orientation, btVector3 position, glm::vec3 size, float mass, float restitution, usi shapeIndex, usi meshIndex, usi texIndex, bool isKinematic = false);
 };
 
     

@@ -14,6 +14,7 @@
 class Graphics;
 
 class Object {
+    friend class Graphics;
 private:
     btDiscreteDynamicsWorld * dynamicsWorld;
     glm::mat4 model;

@@ -44,7 +44,7 @@ void Object::Update(float dt) {
     const btVector3 & pos = trans.getOrigin();
     const btQuaternion & rot = trans.getRotation();
     model = glm::translate(glm::vec3{pos.getX(), pos.getY(), pos.getZ()}) *
-            glm::toMat4(glm::quat{rot.getX(), rot.getY(), rot.getZ(), rot.getW()}) *                                                      
+            glm::toMat4(glm::quat{rot.getW(), rot.getX(), rot.getY(), rot.getZ()}) *                                                      
             glm::scale(size);
 }
 

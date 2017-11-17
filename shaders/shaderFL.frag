@@ -25,6 +25,8 @@ uniform vec3 pointlightBrightness;
 uniform vec3 dirlightDir;
 uniform vec3 dirlightBrightness;
 
+uniform int bumped;
+
 out vec4 frag_color;
 
 
@@ -49,6 +51,7 @@ vec3 lighting(vec3 lightDir, vec3 normal, vec3 camDir, vec3 brightness) {
 	    if(ls < 0) {ls = 0;}
 	    else {ls = pow(ls, shininess) * ld;}
 	    brightness *= ka + kd*ld + ks*ls;
+	    
 	    return brightness;
 	} else {
 	    return vec3(0, 0, 0);
@@ -70,6 +73,7 @@ void main(void) {
 	PLdir /= PLdistance;
 	brightness += lighting(PLdir, normal, camDir, pointlightBrightness / (PLdistance*PLdistance));
 	brightness += lighting(-dirlightDir, normal, camDir, dirlightBrightness);
+	if(bumped == 1) {brightness += vec3(0.6f, 0.6f, 0.6f);}
 	frag_color *= vec4(brightness, 1);
 }
 

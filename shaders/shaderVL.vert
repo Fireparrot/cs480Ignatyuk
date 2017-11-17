@@ -32,7 +32,7 @@ uniform vec3 pointlightBrightness;
 uniform vec3 dirlightDir;
 uniform vec3 dirlightBrightness;
 
-
+uniform int bumped;
 
 float length2(vec2 v) {return dot(v, v);}
 float length2(vec3 v) {return dot(v, v);}
@@ -79,6 +79,7 @@ void main(void) {
 	PLdir /= PLdistance;
 	brightness += lighting(PLdir, normal, camDir, pointlightBrightness / (PLdistance*PLdistance));
 	brightness += lighting(-dirlightDir, normal, camDir, dirlightBrightness);
+	if(bumped == 1) {brightness += vec3(0.6f, 0.6f, 0.6f);}
 	vs_out.brightness = brightness;
 }
 

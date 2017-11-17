@@ -77,20 +77,27 @@ void Engine::Keyboard() {
     }
     
     if(m_event.type == SDL_KEYDOWN) {
+        //std::cerr << "DOWN: " << m_event.key.keysym.sym << std::endl;
         if(m_event.key.keysym.sym == SDLK_ESCAPE) {
           m_running = false;
         }
-        if(m_event.key.keysym.sym == SDLK_w) {
-            cylZ = 1;
-        }
-        if(m_event.key.keysym.sym == SDLK_s) {
-            cylZ = -1;
+        if(m_event.key.keysym.sym == SDLK_SPACE) {
+            m_graphics->plungerHeld = true;
         }
         if(m_event.key.keysym.sym == SDLK_a) {
-            cylX = 1;
+            m_graphics->flipperLeftHeld = true;
         }
         if(m_event.key.keysym.sym == SDLK_d) {
-            cylX = -1;
+            m_graphics->flipperRightHeld = true;
+        }
+        if(m_event.key.keysym.sym == SDLK_z) {
+            m_graphics->cameraMove = -1;
+        }
+        if(m_event.key.keysym.sym == SDLK_x) {
+            m_graphics->cameraMove = 1;
+        }
+        if(m_event.key.keysym.sym == SDLK_s) {
+            m_graphics->activateAddBall();
         }
         if(m_event.key.keysym.sym == SDLK_e) {
             if(m_graphics->lighting == 1) {m_graphics->lighting = 4;}
@@ -131,6 +138,22 @@ void Engine::Keyboard() {
         }
     }
     if(m_event.type == SDL_KEYUP) {
+        //std::cerr << "UP: " << m_event.key.keysym.sym << std::endl;
+        if(m_event.key.keysym.sym == SDLK_SPACE) {
+            m_graphics->plungerHeld = false;
+        }
+        if(m_event.key.keysym.sym == SDLK_a) {
+            m_graphics->flipperLeftHeld = false;
+        }
+        if(m_event.key.keysym.sym == SDLK_d) {
+            m_graphics->flipperRightHeld = false;
+        }
+        if(m_event.key.keysym.sym == SDLK_z) {
+            m_graphics->cameraMove = 0;
+        }
+        if(m_event.key.keysym.sym == SDLK_x) {
+            m_graphics->cameraMove = 0;
+        }
         if(m_event.key.keysym.sym == SDLK_w) {
             cylZ = 0;
         }
