@@ -29,6 +29,7 @@ private:
     btRigidBody * rigidBody;
 public:
     Object(const std::vector<VertexData> * vertices_, const std::vector<unsigned int> * indices_, GLuint tex_, glm::vec3 size_, btDiscreteDynamicsWorld * dynamicsWorld_, const btRigidBody::btRigidBodyConstructionInfo & CI, bool isKinematic = false);
+    Object(const std::vector<VertexData> * vertices_, const std::vector<unsigned int> * indices_, GLuint tex_, glm::vec3 pos, glm::quat rot, glm::vec3 size_);
     ~Object();
 public:
     void Update(float dt);

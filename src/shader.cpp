@@ -115,12 +115,13 @@ void Shader::Enable() {
     glUseProgram(m_shaderProg);
 }
 
-GLint Shader::GetUniformLocation(const char* pUniformName) {
-    GLuint location = glGetUniformLocation(m_shaderProg, pUniformName);
-
-    if(location == INVALID_UNIFORM_LOCATION) {
-        std::cerr << "Warning! Unable to get the location of uniform" << pUniformName << std::endl;
+GLint Shader::uniform(std::string pUniformName) {
+    GLint & location = uniforms[pUniformName];
+    if(location == 0) {
+        location = glGetUniformLocation(m_shaderProg, pUniformName.c_str());
+        if(location == INVALID_UNIFORM_LOCATION) {
+            std::cerr << "Warning! Unable to get the location of uniform " << pUniformName << std::endl;
+        }
     }
-
     return location;
 }

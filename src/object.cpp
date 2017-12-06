@@ -32,20 +32,49 @@ Object::Object(const std::vector<VertexData> * vertices_, const std::vector<unsi
     dynamicsWorld->addRigidBody(rigidBody);
 }
 
+Object::Object(const std::vector<VertexData> * vertices_, const std::vector<unsigned int> * indices_, GLuint tex_, glm::vec3 pos, glm::quat rot, glm::vec3 size_):
+    vertices(vertices_),
+    indices(indices_),
+    ka{0.2f, 0.2f, 0.2f},
+    kd{1.0f, 1.0f, 1.0f},
+    ks{0.2f, 0.2f, 0.2f},
+    shininess(5.f),
+    tex(tex_),
+    size(size_),
+    dynamicsWorld(NULL),
+    rigidBody(NULL)
+{
+    glGenBuffers(1, &VB);
+    glBindBuffer(GL_ARRAY_BUFFER, VB);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(VertexData) * vertices->size(), &(*vertices)[0], GL_STATIC_DRAW);
+    
+    glGenBuffers(1, &IB);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IB);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices->size(), &(*indices)[0], GL_STATIC_DRAW);
+    
+    model = glm::translate(pos) *
+            glm::toMat4(rot) *                                                      
+            glm::scale(size);
+}
+
 Object::~Object() {
-    dynamicsWorld->removeRigidBody(rigidBody);
-    delete rigidBody->getMotionState();
-    delete rigidBody;
+    if(rigidBody) {
+        dynamicsWorld->removeRigidBody(rigidBody);
+        delete rigidBody->getMotionState();
+        delete rigidBody;
+    }
 }
 
 void Object::Update(float dt) {
-    btTransform trans;
-    rigidBody->getMotionState()->getWorldTransform(trans);
-    const btVector3 & pos = trans.getOrigin();
-    const btQuaternion & rot = trans.getRotation();
-    model = glm::translate(glm::vec3{pos.getX(), pos.getY(), pos.getZ()}) *
-            glm::toMat4(glm::quat{rot.getW(), rot.getX(), rot.getY(), rot.getZ()}) *                                                      
-            glm::scale(size);
+    if(rigidBody) {
+        btTransform trans;
+        rigidBody->getMotionState()->getWorldTransform(trans);
+        const btVector3 & pos = trans.getOrigin();
+        const btQuaternion & rot = trans.getRotation();
+        model = glm::translate(glm::vec3{pos.getX(), pos.getY(), pos.getZ()}) *
+                glm::toMat4(glm::quat{rot.getW(), rot.getX(), rot.getY(), rot.getZ()}) *                                                      
+                glm::scale(size);
+    }
 }
 
 glm::mat4 Object::GetModel() const {return model;}

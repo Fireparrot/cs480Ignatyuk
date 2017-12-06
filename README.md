@@ -1,20 +1,18 @@
-# PA9: Bullet + Lighting
+# PA11 Final: Graphics Simulator
 
 Nikita Ignatyk and Roniel Padua
 
 # Description
 
-All files present are for PA9: Bullet + Lighting.
-
-## Lighting
-
-There is a point light, a directional (parallel) light, and a spot light.
-
-The spotlight follows the ball (and can switch color), and the others are locked in their state.
+All files present are for the final project, Graphics Simulator
 
 # Building
 
 In the folder containing the include, src, shaders and objects folders:
+
+Type and  run "./start.sh" in the terminal
+
+**OR**
 
 0.) rm build -r
 
@@ -30,45 +28,22 @@ In the folder containing the include, src, shaders and objects folders:
 
 Running the project requires no command line arguments, nor does it give out a prompt.
 
-Simply type in "./PA9".
+Simply type in "./GS" if in the build directory, or "build/GS" if right outside the build directory.
 
 # Libraries
 
 GLM, GLEW, SDL, Assimp, devIL and Bullet are required libraries.
 
-Assimp must be installed using "sudo apt-get install libassimp-dev". This should place Assimp .h/.hpp files in /usr/include/assimp/ and libassimp.so in /usr/lib/x86_64-linux-gnu/
-
-devIL (outdated name: openIL) must be installed using "sudo apt-get install libdevil-dev". Its files should be installed in the same places as Assimp.
-
-Bullet should be installed using "sudo apt-get install libbullet-dev". This installs <i>both the includes and libraries</i> for Bullet. <b>This project depends on the includes and libraries for Bullet to be installed in the folders as above.</b>
+Running start.sh will make sure they are installed, and if they are not, will prompt for sudo password to install them.
 
 # Controls
 
 ## Keyboard
 
-The up/down/left/right arrow keys move the cube.
-
-e changes between per-fragment and per-vertex lighting.
-Keypad / and * decreases and increases (respectively) the spotlight's brightness.
-Keypad - and + decreases and increases (respectively) the spotlight's "size".
-r and f increases and decreases (respectively) all objects' ambient constant.
-t and g increases and decreases (respectively) the ball's specular constant.
-c switches between a cyan light and a white light for the spotlight.
+PENDING
 
 ## Mouse
 
-Moving the mouse moves the cube. The mouse may be invisibly bounded by the window, preventing movement in certain directions after the mouse travels too far.
+PENDING
 
-## The Board
-
-The ball and icosahedron are mobile objets that can be hit with the cube (or each other).
-
-Both bounce slightly off walls and the cube, and bounce a lot off the central cylinder.
-
-The icosahedron is a custom mesh loaded into Bullet (with a mass lower than the sphere's).
-
-## NOTE
-
-If you launch any of the two mobile objects off the board, it's your fault ;P
-Restart the program in that case, if you want them back.
 

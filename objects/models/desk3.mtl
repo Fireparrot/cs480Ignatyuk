@@ -1,0 +1,57 @@
+# Blender MTL File: 'None'
+# Material Count: 5
+
+newmtl Material.001
+Ns 94.117647
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd /home/fireparrot/Desktop/CS480/Final/objects/textures/desk2.png
+
+newmtl Material.002
+Ns 94.117647
+Ka 0.000000 0.000000 0.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd /home/fireparrot/Desktop/CS480/Final/objects/textures/desk2.png
+
+newmtl Material.003
+Ns 94.117647
+Ka 0.000000 0.000000 0.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd /home/fireparrot/Desktop/CS480/Final/objects/textures/desk2.png
+
+newmtl metal
+Ns 92.156863
+Ka 0.000000 0.000000 0.000000
+Kd 0.512000 0.512000 0.512000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd /home/fireparrot/Desktop/CS480/Final/objects/textures/desk2.png
+
+newmtl red_plastic
+Ns 50.980392
+Ka 0.000000 0.000000 0.000000
+Kd 0.001150 0.000000 0.121860
+Ks 0.800000 0.800000 0.800000
+Ke 0.000000 0.000000 0.000000
+Ni 1.800000
+d 1.000000
+illum 2
+map_Kd /home/fireparrot/Desktop/CS480/Final/objects/textures/desk2.png

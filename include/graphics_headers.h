@@ -21,6 +21,7 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <btBulletCollisionCommon.h>
 #include <btBulletDynamicsCommon.h>
+#include <BulletCollision/CollisionShapes/btShapeHull.h>
 
 #define INVALID_UNIFORM_LOCATION 0x7fffffff
 
