@@ -36,6 +36,7 @@ checkInstall sdl2
 checkInstall assimp
 checkInstall devil
 checkInstall bullet
+checkInstall ftgl
 
 if [ ! -d "build" ]; then
 	echo "Making build directory"

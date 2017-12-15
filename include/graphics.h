@@ -7,13 +7,14 @@
 #include "cam.h"
 #include "shader.h"
 #include "object.h"
-#include <IL/il.h>
+#include "image_helper.h"
 #include <vector>
 #include <string>
 #include <fstream>
 
 using namespace std;
 
+class Menu;
 class Graphics {
 public:
     Graphics();
@@ -30,8 +31,13 @@ public:
     int peek;
     float peekingAnimation;
     float camTheta, camPhi;
-        
-    glm::vec3 selectSphere;
+    
+    glm::vec3 selectSpherePos;
+    
+    Menu * menu;
+    bool pauseGame;
+    
+    ImageHelper * ih;
 
 private:
     std::string ErrorString(GLenum error);
@@ -57,8 +63,7 @@ private:
     Object * makeObject(glm::vec3 pos, glm::quat rot, glm::vec3 size, usi meshIndex, usi texIndex);
 };
 
-    
-GLuint loadTexture(std::string filename);
+
 void loadMesh(std::string filename, std::vector<VertexData> & vertices, std::vector<unsigned int> & indices, btTriangleMesh * trimesh = nullptr);
 
 #endif /* GRAPHICS_H */

@@ -53,7 +53,7 @@ void main(void) {
 	vec3 PLdir = vec3(0, 10, 0)-fs_in.worldPos;
 	float PLdistance = length(PLdir);
 	PLdir /= PLdistance;
-	brightness += lighting(PLdir, normal, camDir, vec3(100, 100, 100) / (PLdistance*PLdistance));
+	brightness += lighting(PLdir, normal, camDir, vec3(40, 40, 40) / (PLdistance*PLdistance));
 	frag_color *= vec4(brightness, 1);
 }
 

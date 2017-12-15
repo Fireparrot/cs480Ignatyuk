@@ -34,7 +34,7 @@ private:
     unsigned int m_DT;
     long long m_currentTimeMillis;
     bool m_running;
-    bool mouseWarped;
+    int mouseWarped;
 };
 
 #endif // ENGINE_H

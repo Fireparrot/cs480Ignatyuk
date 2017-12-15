@@ -1,5 +1,9 @@
 #include "graphics.h"
+#include "menu.h"
 #include <fstream>
+
+#include <glm/ext.hpp>
+#include <FTGL/ftgl.h>
 
 using usi = unsigned short int;
 
@@ -20,10 +24,12 @@ Graphics::Graphics():
     walkingType(0),
     crouchingAnimation(0),
     peek(0),
-    peekingAnimation(0)
+    peekingAnimation(0),
+    pauseGame(false)
 {}
 
 Graphics::~Graphics() {
+    delete menu;
     for(Object * object : objects) {delete object;}
     for(std::vector<VertexData> * vertices : vertexVectors) {delete vertices;}
     for(std::vector<unsigned int> * indices : indexVectors) {delete indices;}
@@ -112,7 +118,42 @@ bool Graphics::Initialize(int width, int height) {
         return false;
     }
     
-
+    
+    ih = new ImageHelper();
+    
+    ih->setPadding(25, 25, 10, 10);
+    ih->setMin(300, 100);
+    ih->setUsePadding(false);
+    ih->setForeColor(1, 1, 0, 1);
+    ih->setBackColor(0, 0, 1, 0);
+    ih->setFontSize(40);
+    ih->setFont("truetype/freefont/FreeSarif.ttf");
+    ih->rasterizeText(std::wstring(L"like this! ") + (wchar_t)0x2600);
+    
+    menu = new Menu(this, "shaderMenu.vert", "shaderMenu.frag");
+    
+    menu->add({-800, 400}, {-500, 500}, 0.f,
+            ih->rasterizeText("menu"), ih->loadTexture("menu.png"), ih->loadTexture("menu_hover.png"), ih->loadTexture("menu_click.png"),
+            [] (Menu * menu, MenuItem * item) {menu->activeID = 1;});
+    
+    GLint lowGravTex, highGravTex;
+    lowGravTex = ih->rasterizeText("grav: low");
+    highGravTex = ih->rasterizeText("grav: high");
+    menu->add({-150, 150}, { 150, 250}, 0.f,
+            lowGravTex, ih->loadTexture("menu.png"), ih->loadTexture("menu_hover.png"), ih->loadTexture("menu_click.png"),
+            [=] (Menu * menu, MenuItem * item) {static bool g = false; g = !g; menu->graphics->dynamicsWorld->setGravity({0, g ? -20.f : -10.f, 0}); item->overlayTexture = g ? highGravTex : lowGravTex;});
+            
+    menu->add({-150,-100}, { 150, 000}, 0.f,
+            ih->rasterizeText("back"), ih->loadTexture("menu.png"), ih->loadTexture("menu_hover.png"), ih->loadTexture("menu_click.png"),
+            [] (Menu * menu, MenuItem * item) {menu->activeID = 0;});
+            
+    menu->add({-150,-250}, { 150,-150}, 0.f,
+            ih->rasterizeText("exit"), ih->loadTexture("menu.png"), ih->loadTexture("menu_hover.png"), ih->loadTexture("menu_click.png"),
+            [] (Menu * menu, MenuItem * item) {menu->exitRequest = true;});
+            
+    menu->addGroup({0});
+    menu->addGroup({1, 2, 3});
+    //menu->shader = shaderFL;
     
     //enable depth testing
     glEnable(GL_DEPTH_TEST);
@@ -120,6 +161,8 @@ bool Graphics::Initialize(int width, int height) {
     
     //Culls (i.e. doesn't render) back faces from triangles
     glEnable(GL_CULL_FACE);
+    
+    
     
     broadphase = new btDbvtBroadphase();
     collisionConfiguration = new btDefaultCollisionConfiguration();
@@ -146,13 +189,13 @@ bool Graphics::Initialize(int width, int height) {
     for(usi i = 0; i < 7; ++i) {
         texes.push_back(GLuint(0));
     }
-    texes[0] = loadTexture("wood_texture.jpg");
-    texes[1] = loadTexture("seamless_wood1.jpg");
-    texes[2] = loadTexture("desk2.png");
-    texes[3] = loadTexture("white_wall.jpg");
-    texes[4] = loadTexture("blue_carpet.jpg");
-    texes[5] = loadTexture("blue_plastic.jpg");
-    texes[6] = loadTexture("slide0.png");
+    texes[0] = ih->loadTexture("wood_texture.jpg");
+    texes[1] = ih->loadTexture("seamless_wood1.jpg");
+    texes[2] = ih->loadTexture("desk2.png");
+    texes[3] = ih->loadTexture("white_wall.jpg");
+    texes[4] = ih->loadTexture("blue_carpet.jpg");
+    texes[5] = ih->loadTexture("blue_plastic.jpg");
+    texes[6] = ih->loadTexture("slide0.png");
     
     collisionShapes.push_back(new btCylinderShape({0.2f, 0.8f, 1.0f}));
     
@@ -202,10 +245,9 @@ bool Graphics::Initialize(int width, int height) {
     makeObject({0, 0, 0, 1}, { roomLength/2-wallWidth/2,  rimHeight2,                         0}, {wallWidth/4 , rimHeight1/2, roomWidth/2}, 0, 0.1, 1.0, 6, 2, 0);
     makeObject({0, 0, 0, 1}, {-roomLength/2+wallWidth/2,  rimHeight2,                         0}, {wallWidth/4 , rimHeight1/2, roomWidth/2}, 0, 0.1, 1.0, 6, 2, 0);
     
-    std::cout << "lol" << std::endl;
     makeObject({0, roomHeight/2+cliffHeight/2, roomWidth/2-wallWidth/2*1.01f}, {1/sqrt(2.f), 0, 0, -1/sqrt(2.f)}, {1, 1.6f, 0.01f}, 2, 6);
-    std::cout << "lol" << std::endl;
     
+    /*
     checkUniform("projMat", shaderFL);
     checkUniform("viewMat", shaderFL);
     checkUniform("modelMat", shaderFL);
@@ -227,6 +269,7 @@ bool Graphics::Initialize(int width, int height) {
     checkUniform("kd", shaderVL);
     checkUniform("ks", shaderVL);
     checkUniform("shininess", shaderVL);
+    */
     
     return true;
 }
@@ -329,12 +372,13 @@ void Graphics::Render() {
     static Shader * shader;
     if(lighting == 3) {shader = shaderFL;}
     else if(lighting == 4) {shader = shaderVL;}
-    if(lighting >= 3) {shader->Enable(); lighting -= 2;}
+    shader->Enable();
+    if(lighting >= 3) {lighting -= 2;}
     
     //Send in the projection and view to the shader
     glUniformMatrix4fv(shader->uniform("projMat"), 1, GL_FALSE, glm::value_ptr(m_camera->GetProjection())); 
     glUniformMatrix4fv(shader->uniform("viewMat"), 1, GL_FALSE, glm::value_ptr(m_camera->GetView()));
-    glActiveTexture(GL_TEXTURE0);
+    //std::cout << "View: " << glm::to_string(m_camera->GetView()) << std::endl;
     glUniform1i(shader->uniform("tex"), 0);
     glUniform3fv(shader->uniform("camPos"), 1, glm::value_ptr(m_camera->GetPosition()));
     
@@ -347,9 +391,12 @@ void Graphics::Render() {
         glUniform3fv(shader->uniform("kd"), 1, glm::value_ptr(objects[i]->GetKd()));
         glUniform3fv(shader->uniform("ks"), 1, glm::value_ptr(objects[i]->GetKs()));
         glUniform1f(shader->uniform("shininess"), objects[i]->GetShininess());
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, objects[i]->GetTexture());
         objects[i]->Render();
     }
+    
+    menu->render();
     
     //Get any errors from OpenGL
     auto error = glGetError();
@@ -375,29 +422,6 @@ std::string Graphics::ErrorString(GLenum error) {
     }
 }
 
-//This is a helper function that uses devIL to open an image, then loads it into openGL and passes back the openGL reference to the texture
-GLuint loadTexture(std::string filename) {
-    ILuint image;
-    ilGenImages(1, &image);
-    ilBindImage(image);
-    ilEnable(IL_ORIGIN_SET);
-    ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
-    ilLoadImage(("objects/textures/" + filename).c_str());
-    
-    GLuint tex;
-    glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT), 0, (ilGetInteger(IL_IMAGE_BYTES_PER_PIXEL) == 3 ? GL_RGB : GL_RGBA), GL_UNSIGNED_BYTE, ilGetData());
-    glBindTexture(GL_TEXTURE_2D, 0);
-    
-    ilDeleteImages(1, &image);
-    
-    return tex;
-}
 void loadMesh(std::string filename, std::vector<VertexData> & vertices, std::vector<unsigned int> & indices, btTriangleMesh * trimesh) {
     Assimp::Importer importer;
     const aiScene * scene = importer.ReadFile("objects/models/" + filename, aiProcess_Triangulate);

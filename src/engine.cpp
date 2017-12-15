@@ -1,5 +1,5 @@
-
 #include "engine.h"
+#include "menu.h"
 
 #define PI 3.141592653589793238
 
@@ -8,7 +8,7 @@ Engine::Engine(string name, int width, int height) {
     m_WINDOW_WIDTH = width;
     m_WINDOW_HEIGHT = height;
     m_FULLSCREEN = false;
-    mouseWarped = false;
+    mouseWarped = 0;
 }
 
 Engine::Engine(string name) {
@@ -16,7 +16,7 @@ Engine::Engine(string name) {
     m_WINDOW_HEIGHT = 0;
     m_WINDOW_WIDTH = 0;
     m_FULLSCREEN = true;
-    mouseWarped = false;
+    mouseWarped = 0;
 }
 
 Engine::~Engine() {
@@ -60,8 +60,12 @@ void Engine::Run() {
             Keyboard();
             Mouse();
         }
-        SDL_WarpMouseInWindow(NULL, m_WINDOW_WIDTH/2, m_WINDOW_HEIGHT/2);
-        mouseWarped = true;
+        int mouseX, mouseY;
+        SDL_GetMouseState(&mouseX, &mouseY);
+        if(!m_graphics->pauseGame && (mouseX <= 10 || mouseX >= m_WINDOW_WIDTH-10 || mouseY <= 10 || mouseY >= m_WINDOW_HEIGHT-10)) {
+            SDL_WarpMouseInWindow(NULL, m_WINDOW_WIDTH/2, m_WINDOW_HEIGHT/2);
+            ++mouseWarped;
+        }
         
         //Update and render the graphics
         m_graphics->Update(m_DT/1000.f);
@@ -69,6 +73,8 @@ void Engine::Run() {
         
         //Swap to the Window
         m_window->Swap();
+        
+        if(m_graphics->menu->exitRequest) {m_running = false;}
     }
 }
 
@@ -80,8 +86,14 @@ void Engine::Keyboard() {
     
     if(m_event.type == SDL_KEYDOWN) {
         //std::cerr << "DOWN: " << m_event.key.keysym.sym << std::endl;
-        if(m_event.key.keysym.sym == SDLK_ESCAPE) {
+        if(m_event.key.keysym.sym == SDLK_DELETE) {
           m_running = false;
+        }
+        
+        if(m_event.key.keysym.sym == SDLK_ESCAPE) {
+          m_graphics->pauseGame = !m_graphics->pauseGame;
+          m_graphics->menu->activeID = m_graphics->pauseGame ? 1 : 0;
+          SDL_ShowCursor(m_graphics->pauseGame ? SDL_ENABLE : SDL_DISABLE);
         }
         
         if(m_event.key.keysym.sym == SDLK_l) {
@@ -183,12 +195,33 @@ void Engine::Mouse() {
         return;
     }
     if(m_event.type == SDL_MOUSEMOTION) {
-        if(mouseWarped) {mouseWarped = false;}
-        else {
+        if(!m_graphics->pauseGame) {
+            if(mouseWarped > 0) {if(abs(m_event.motion.xrel) > 100 || abs(m_event.motion.yrel) > 100) {--mouseWarped; return;}}
             m_graphics->camTheta -= m_event.motion.xrel/10.f * m_DT/1000;
             m_graphics->camPhi -= m_event.motion.yrel/10.f * m_DT/1000;
             if(m_graphics->camPhi < -PI/2 * 0.98) {m_graphics->camPhi = -PI/2 * 0.98;}
             if(m_graphics->camPhi >  PI/2 * 0.98) {m_graphics->camPhi =  PI/2 * 0.98;}
+        }
+        m_graphics->menu->mouseHover(2.f*m_event.motion.x/m_WINDOW_WIDTH-1, 1-2.f*m_event.motion.y/m_WINDOW_HEIGHT);
+    }
+    if(m_event.type == SDL_MOUSEBUTTONDOWN) {
+        if(m_event.button.button == SDL_BUTTON_RIGHT) {
+            if(m_graphics->menu->activeID == 0) {
+                m_graphics->pauseGame = !m_graphics->pauseGame;
+                SDL_ShowCursor(m_graphics->pauseGame ? SDL_ENABLE : SDL_DISABLE);
+            }
+        }
+        if(m_event.button.button == SDL_BUTTON_LEFT) {
+            if(m_graphics->pauseGame) {
+                m_graphics->menu->mouseClick(2.f*m_event.motion.x/m_WINDOW_WIDTH-1, 1-2.f*m_event.motion.y/m_WINDOW_HEIGHT);
+            }
+        }
+    }
+    if(m_event.type == SDL_MOUSEBUTTONUP) {
+        if(m_event.button.button == SDL_BUTTON_LEFT) {
+            if(m_graphics->pauseGame) {
+                m_graphics->menu->mouseRelease(2.f*m_event.motion.x/m_WINDOW_WIDTH-1, 1-2.f*m_event.motion.y/m_WINDOW_HEIGHT);
+            }
         }
     }
 }
