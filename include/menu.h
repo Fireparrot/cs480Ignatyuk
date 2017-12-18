@@ -21,14 +21,19 @@ private:
     GLint texture;
     GLint hoverTexture;
     GLint clickTexture;
-    std::function<void (Menu *, MenuItem *)> function;
+    bool actOnClick;
+    float slider, sliderMinX, sliderMaxX;
+    std::function<void (Menu * menu, MenuItem * item, float x, float y)> function;
+    friend void setSlider(MenuItem * item, float x, float y);
 public:
     MenuItem(Menu * menu_,
             glm::vec3 position_, glm::vec2 size_,
-            GLint overlayTexture_, GLint texture_, GLint hoverTexture_ = -1, GLint clickTexture_ = -1,
-            std::function<void (Menu *, MenuItem *)> function_ = [] (Menu * menu, MenuItem * item) {});
+            GLint overlayTexture_, GLint texture_, GLint hoverTexture_, GLint clickTexture_,
+            std::function<void (Menu *, MenuItem *, float x, float y)> function_,
+            bool actOnClick_, float slider_, float sliderMinX_, float sliderMaxX_);
     ~MenuItem();
 };
+void setSlider(MenuItem * item, float x, float y);
 
 class Menu {
     friend class MenuItem;
@@ -55,11 +60,13 @@ private:
     bool on(float x, float y, uint & itemID) const;
 public:
     void add(glm::vec3 pos, glm::vec2 size,
-            GLint overlayTexture, GLint texture, GLint hoverTexture = -1, GLint clickTexture = -1,
-            std::function<void (Menu *, MenuItem *)> function = [] (Menu * menu, MenuItem * item) {});
+            GLint overlayTexture, GLint texture, GLint hoverTexture, GLint clickTexture,
+            std::function<void (Menu *, MenuItem *, float x, float y)> function = [] (Menu * menu, MenuItem * item, float x, float y) {},
+            bool actOnClick = true, float slider = 0.5f, float sliderMinX_ = -1, float sliderMaxX_ = 1);
     void add(glm::vec2 bl, glm::vec2 tr, float depth,
-            GLint overlayTexture, GLint texture, GLint hoverTexture = -1, GLint clickTexture = -1,
-            std::function<void (Menu *, MenuItem *)> function = [] (Menu * menu, MenuItem * item) {});
+            GLint overlayTexture, GLint texture, GLint hoverTexture, GLint clickTexture,
+            std::function<void (Menu *, MenuItem *, float x, float y)> function = [] (Menu * menu, MenuItem * item, float x, float y) {},
+            bool actOnClick = true, float slider = 0.5f, float sliderMinX_ = -1, float sliderMaxX_ = 1);
     void addGroup(std::vector<uint> group);
     
     void mouseHover(float x, float y);
@@ -67,6 +74,8 @@ public:
     void mouseRelease(float x, float y);
     void render() const;
 };
+
+
 
 #endif
 

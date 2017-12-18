@@ -36,7 +36,7 @@ checkInstall sdl2
 checkInstall assimp
 checkInstall devil
 checkInstall bullet
-checkInstall ftgl
+checkInstall freetype6
 
 if [ ! -d "build" ]; then
 	echo "Making build directory"
@@ -45,10 +45,16 @@ fi
 cd build
 cmake ..
 make
+compileStatus=$?
 
 program=$(find . -executable -type f -and -not -wholename './*/*')
 program=${program:2}
 echo ""
-echoColor $blue "Ready to run!"
-echo "Type \"build/$program\" into the terminal to run the program!"
+if [[ $compileStatus = 2 ]]; then
+    echoColor $red "Failed to compile!"
+else
+    echoColor $blue "Ready to run!"
+    echo "Type \"build/$program\" into the terminal to run the program!"
+fi
 resetColor
+

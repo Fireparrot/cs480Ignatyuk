@@ -11,7 +11,7 @@ FIND_PACKAGE(devIL REQUIRED)
 #FIND_PACKAGE(devILU REQUIRED)
 #FIND_PACKAGE(devILUT REQUIRED)
 FIND_PACKAGE(freetype REQUIRED)
-FIND_PACKAGE(ftgl REQUIRED)
+#FIND_PACKAGE(ftgl REQUIRED)
 FIND_PACKAGE(BtC REQUIRED)
 FIND_PACKAGE(BtD REQUIRED)
 FIND_PACKAGE(BtM REQUIRED)
@@ -25,7 +25,7 @@ SET(TARGET_LIBRARIES "
 #    ${devILU_LIBRARY}
 #    ${devILUT_LIBRARY}
     ${freetype_LIBRARY}
-    ${ftgl_LIBRARY}
+#    ${ftgl_LIBRARY}
     ${BtC_LIBRARY}
     ${BtD_LIBRARY}
     ${BtM_LIBRARY}
@@ -60,10 +60,10 @@ IF(NOT APPLE)
         INCLUDE_DIRECTORIES(${freetype_INCLUDE_DIRS})
         LINK_LIBRARIES(${freetype_LIBARY})
     ENDIF(freetype_FOUND)
-    IF(ftgl_FOUND)
-        INCLUDE_DIRECTORIES(${ftgl_INCLUDE_DIRS})
-        LINK_LIBRARIES(${ftgl_LIBARY})
-    ENDIF(ftgl_FOUND)
+#    IF(ftgl_FOUND)
+#        INCLUDE_DIRECTORIES(${ftgl_INCLUDE_DIRS})
+#        LINK_LIBRARIES(${ftgl_LIBARY})
+#    ENDIF(ftgl_FOUND)
     IF(BtC_FOUND)
         INCLUDE_DIRECTORIES(${BtC_INCLUDE_DIRS})
         LINK_LIBRARIES(${BtC_LIBARY})
@@ -86,7 +86,7 @@ INCLUDE_DIRECTORIES(
 #    ${devILU_INCLUDE_DIRS}
 #    ${devILUT_INCLUDE_DIRS}
     ${freetype_INCLUDE_DIRS}
-    ${ftgl_INCLUDE_DIRS}
+#    ${ftgl_INCLUDE_DIRS}
     ${BtC_INCLUD_DIRS}
     ${BtD_INCLUD_DIRS}
 )
@@ -104,7 +104,6 @@ add_custom_target("${PROJECT_NAME}_SUCCESSFUL" ALL
                   DEPENDS ${PROJECT_NAME}
                   COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/shaders/ ${CMAKE_CURRENT_BINARY_DIR}/shaders
                   COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/objects/ ${CMAKE_CURRENT_BINARY_DIR}/objects
-                  COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/player.txt ${CMAKE_CURRENT_BINARY_DIR}/player.txt
                   COMMAND ${CMAKE_COMMAND} -E echo ""
                   COMMAND ${CMAKE_COMMAND} -E echo "====================="
                   COMMAND ${CMAKE_COMMAND} -E echo "  Compile complete!"
@@ -121,7 +120,7 @@ TARGET_LINK_LIBRARIES(
 #    ${devILU_LIBRARY}
 #    ${devILUT_LIBRARY}
     ${freetype_LIBRARY}
-    ${ftgl_LIBRARY}
+#    ${ftgl_LIBRARY}
     ${BtC_LIBRARY}
     ${BtD_LIBRARY}
     ${BtM_LIBRARY}

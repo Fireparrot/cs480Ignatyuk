@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <utility>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -32,16 +33,18 @@ public:
     Object(const std::vector<VertexData> * vertices_, const std::vector<unsigned int> * indices_, GLuint tex_, glm::vec3 pos, glm::quat rot, glm::vec3 size_);
     ~Object();
 public:
-    void Update(float dt);
-    void Render();
+    void update(float dt);
+    void render();
 
-    glm::mat4 GetModel() const;
-    glm::vec3 & GetKa();
-    glm::vec3 & GetKd();
-    glm::vec3 & GetKs();
-    float & GetShininess();
-    GLuint GetTexture() const;
-    btRigidBody * GetRigidBody();
+    glm::mat4 & getModel();
+    glm::vec3 & getKa();
+    glm::vec3 & getKd();
+    glm::vec3 & getKs();
+    float & getShininess();
+    GLuint getTexture() const;
+    btRigidBody * getRigidBody();
+    
+    std::pair<float, glm::vec3> intersect(glm::vec3 start, glm::vec3 ray) const;
 };
 
 #endif /* OBJECT_H */

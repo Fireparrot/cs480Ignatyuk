@@ -60,6 +60,7 @@ void Engine::Run() {
             Keyboard();
             Mouse();
         }
+        m_graphics->menu->mouseHover(2.f*m_event.motion.x/m_WINDOW_WIDTH-1, 1-2.f*m_event.motion.y/m_WINDOW_HEIGHT);
         int mouseX, mouseY;
         SDL_GetMouseState(&mouseX, &mouseY);
         if(!m_graphics->pauseGame && (mouseX <= 10 || mouseX >= m_WINDOW_WIDTH-10 || mouseY <= 10 || mouseY >= m_WINDOW_HEIGHT-10)) {
@@ -76,6 +77,8 @@ void Engine::Run() {
         
         if(m_graphics->menu->exitRequest) {m_running = false;}
     }
+    ilBindImage(m_graphics->whiteboardImage);
+    ilSaveImage("hello.png");
 }
 
 void Engine::Keyboard() {
@@ -99,47 +102,55 @@ void Engine::Keyboard() {
         if(m_event.key.keysym.sym == SDLK_l) {
             if(m_graphics->lighting < 3) {m_graphics->lighting = 5 - m_graphics->lighting;}
         }
-        if(m_event.key.keysym.sym == SDLK_w) {
-            if(m_graphics->dz == 0) {
-                m_graphics->dz = 500;
+        if(!m_graphics->pauseGame) {
+            if(m_event.key.keysym.sym == SDLK_w) {
+                if(m_graphics->dz == 0) {
+                    m_graphics->dz = 500;
+                }
             }
-        }
-        if(m_event.key.keysym.sym == SDLK_a) {
-            if(m_graphics->dx == 0) {
-                m_graphics->dx = 500;
+            if(m_event.key.keysym.sym == SDLK_a) {
+                if(m_graphics->dx == 0) {
+                    m_graphics->dx = 500;
+                }
             }
-        }
-        if(m_event.key.keysym.sym == SDLK_s) {
-            if(m_graphics->dz == 0) {
-                m_graphics->dz = -500;
+            if(m_event.key.keysym.sym == SDLK_s) {
+                if(m_graphics->dz == 0) {
+                    m_graphics->dz = -500;
+                }
             }
-        }
-        if(m_event.key.keysym.sym == SDLK_d) {
-            if(m_graphics->dx == 0) {
-                m_graphics->dx = -500;
+            if(m_event.key.keysym.sym == SDLK_d) {
+                if(m_graphics->dx == 0) {
+                    m_graphics->dx = -500;
+                }
             }
-        }
-        if(m_event.key.keysym.sym == SDLK_SPACE) {
-            m_graphics->dy = 6000;
-        }
-        if(m_event.key.keysym.sym == SDLK_LSHIFT) {
-            if(m_graphics->walkingType == 0) {
-                m_graphics->walkingType = 1;
+            if(m_event.key.keysym.sym == SDLK_SPACE) {
+                m_graphics->dy = 6000;
             }
-        }
-        if(m_event.key.keysym.sym == SDLK_LCTRL) {
-            if(m_graphics->walkingType == 0) {
-                m_graphics->walkingType = -1;
+            if(m_event.key.keysym.sym == SDLK_LSHIFT) {
+                if(m_graphics->walkingType == 0) {
+                    m_graphics->walkingType = 1;
+                }
             }
-        }
-        if(m_event.key.keysym.sym == SDLK_q) {
-            if(m_graphics->peek == 0) {
-                m_graphics->peek = -1;
+            if(m_event.key.keysym.sym == SDLK_LCTRL) {
+                if(m_graphics->walkingType == 0) {
+                    m_graphics->walkingType = -1;
+                }
             }
-        }
-        if(m_event.key.keysym.sym == SDLK_e) {
-            if(m_graphics->peek == 0) {
-                m_graphics->peek = 1;
+            if(m_event.key.keysym.sym == SDLK_q) {
+                if(m_graphics->peek == 0) {
+                    m_graphics->peek = -1;
+                }
+            }
+            if(m_event.key.keysym.sym == SDLK_e) {
+                if(m_graphics->peek == 0) {
+                    m_graphics->peek = 1;
+                }
+            }
+            if(m_event.key.keysym.sym == SDLK_f) {
+                m_graphics->flashOn = m_graphics->flashOn == 1 ? 0 : 1;
+            }
+            if(m_event.key.keysym.sym == SDLK_t) {
+                m_graphics->throwBall = true;
             }
         }
     }
@@ -187,6 +198,9 @@ void Engine::Keyboard() {
                 m_graphics->peek = 0;
             }
         }
+        if(m_event.key.keysym.sym == SDLK_t) {
+            m_graphics->throwBall = false;
+        }
     }
 }
 void Engine::Mouse() {
@@ -202,7 +216,6 @@ void Engine::Mouse() {
             if(m_graphics->camPhi < -PI/2 * 0.98) {m_graphics->camPhi = -PI/2 * 0.98;}
             if(m_graphics->camPhi >  PI/2 * 0.98) {m_graphics->camPhi =  PI/2 * 0.98;}
         }
-        m_graphics->menu->mouseHover(2.f*m_event.motion.x/m_WINDOW_WIDTH-1, 1-2.f*m_event.motion.y/m_WINDOW_HEIGHT);
     }
     if(m_event.type == SDL_MOUSEBUTTONDOWN) {
         if(m_event.button.button == SDL_BUTTON_RIGHT) {
@@ -214,6 +227,9 @@ void Engine::Mouse() {
         if(m_event.button.button == SDL_BUTTON_LEFT) {
             if(m_graphics->pauseGame) {
                 m_graphics->menu->mouseClick(2.f*m_event.motion.x/m_WINDOW_WIDTH-1, 1-2.f*m_event.motion.y/m_WINDOW_HEIGHT);
+            } else {
+                m_graphics->paint = true;
+                if(m_graphics->interactionStage == 0) {m_graphics->interactionStage = 1;}
             }
         }
     }
@@ -221,8 +237,19 @@ void Engine::Mouse() {
         if(m_event.button.button == SDL_BUTTON_LEFT) {
             if(m_graphics->pauseGame) {
                 m_graphics->menu->mouseRelease(2.f*m_event.motion.x/m_WINDOW_WIDTH-1, 1-2.f*m_event.motion.y/m_WINDOW_HEIGHT);
+            } else {
+                m_graphics->paint = false;
+                m_graphics->interactionStage = 0;
             }
         }
+    }
+    if(m_event.wheel.y == 1) {
+        m_graphics->paintRadius *= pow(2, 0.25f);
+        if(m_graphics->paintRadius > 0.03f*8) {m_graphics->paintRadius = 0.03f*8;}
+    }
+    if(m_event.wheel.y == -1) {
+        m_graphics->paintRadius /= pow(2, 0.25f);
+        if(m_graphics->paintRadius < 0.03f/8) {m_graphics->paintRadius = 0.03f/8;}
     }
 }
 

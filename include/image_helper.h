@@ -28,9 +28,9 @@ private:
     const static uint MAX_GLYPHS = 128;
     const std::string fontPath = "/usr/share/fonts/";
     FT_Library ftLibrary;
-    std::map<std::string, FT_Face> fonts;
+    mutable std::map<std::string, FT_Face> fonts;
     std::string fontName;
-    FT_Glyph glyphs[MAX_GLYPHS];
+    mutable FT_Glyph glyphs[MAX_GLYPHS];
     ulong fontSize;
     float space;
     float fr, fg, fb, fa;
@@ -54,8 +54,11 @@ public:
     void setHorAdjust(int adj);
     void setVerAdjust(int adj);
     void setUsePadding(bool b);
-    GLuint rasterizeText(const std::string text, ILuint * imagePtr = NULL);
-    GLuint rasterizeText(const std::wstring text, ILuint * imagePtr = NULL);
+    GLuint rasterizeText(const std::string text, ILuint * imagePtr = NULL) const;
+    GLuint rasterizeText(const std::wstring text, ILuint * imagePtr = NULL) const;
+    void loadTexture(GLuint tex, ILuint * imagePtr = NULL) const;
+    void paint(glm::vec4 color, glm::vec2 pos, float radius, ILuint * imagePtr, bool scaleHorizontally = true);
+    void paint(glm::vec4 color, glm::vec2 start, glm::vec2 end, float radius, ILuint * imagePtr, bool scaleHorizontally = true);
 };
 
 #endif

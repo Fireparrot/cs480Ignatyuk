@@ -10,13 +10,6 @@ uniform sampler2D overlay;
 out vec4 frag_color;
 
 void main() {
-    if(false) {
-        frag_color = texture2D(tex, uv);
-    } else {
-        vec4 top = texture2D(overlay, uv);
-        vec4 bottom = texture2D(tex, uv);
-        frag_color.rgb = top.rgb*top.a + bottom.rgb*(1-top.a);
-        frag_color.a = 1-(1-top.a)*(1-bottom.a);
-    }
+    frag_color = texture2D(tex, uv);
 }
 

@@ -8,6 +8,7 @@
 #include "shader.h"
 #include "object.h"
 #include "image_helper.h"
+#include "interacter.h"
 #include <vector>
 #include <string>
 #include <fstream>
@@ -31,6 +32,7 @@ public:
     int peek;
     float peekingAnimation;
     float camTheta, camPhi;
+    glm::vec3 roomBrightness;
     
     glm::vec3 selectSpherePos;
     
@@ -38,7 +40,42 @@ public:
     bool pauseGame;
     
     ImageHelper * ih;
-
+    
+    Object * user;
+    Object * indicator;
+    Object * ball;
+    Object * doorLeft;
+    Object * doorRight;
+    Object * doorOff;
+    Object * whiteboard;
+    Object * slides;
+    
+    GLuint whiteboardTexture;
+    ILuint whiteboardImage;
+    float paintRadius;
+    glm::vec4 paintColor;
+    bool paint;
+    bool hasPrev;
+    glm::vec2 uvPrev;
+    glm::vec4 indicatorColor;
+    
+    Interacter * interacter;
+    int interactionStage;
+    Interactable * doorLeftI;
+    Interactable * doorRightI;
+    Interactable * ballI;
+    float doorLeftA;
+    float doorRightA;
+    bool doorLeftC;
+    bool doorRightC;
+    
+    bool lightsOn;
+    
+    bool hasBall;
+    bool throwBall;
+    
+    int flashOn;
+    
 private:
     std::string ErrorString(GLenum error);
 

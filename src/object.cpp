@@ -3,6 +3,8 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include <fstream>
+#include <utility>
+#include <cmath>
 
 //Constructs the object, loading the mesh model using assimp and the texture using devIL
 Object::Object(const std::vector<VertexData> * vertices_, const std::vector<unsigned int> * indices_, GLuint tex_, glm::vec3 size_, btDiscreteDynamicsWorld * dynamicsWorld_, const btRigidBody::btRigidBodyConstructionInfo & CI, bool isKinematic):
@@ -10,7 +12,7 @@ Object::Object(const std::vector<VertexData> * vertices_, const std::vector<unsi
     indices(indices_),
     ka{0.2f, 0.2f, 0.2f},
     kd{1.0f, 1.0f, 1.0f},
-    ks{0.2f, 0.2f, 0.2f},
+    ks{0.0f, 0.0f, 0.0f},
     shininess(5.f),
     tex(tex_),
     size(size_),
@@ -65,7 +67,7 @@ Object::~Object() {
     }
 }
 
-void Object::Update(float dt) {
+void Object::update(float dt) {
     if(rigidBody) {
         btTransform trans;
         rigidBody->getMotionState()->getWorldTransform(trans);
@@ -77,15 +79,15 @@ void Object::Update(float dt) {
     }
 }
 
-glm::mat4 Object::GetModel() const {return model;}
-glm::vec3 & Object::GetKa() {return ka;}
-glm::vec3 & Object::GetKd() {return kd;}
-glm::vec3 & Object::GetKs() {return ks;}
-float & Object::GetShininess() {return shininess;}
-GLuint Object::GetTexture() const {return tex;}
-btRigidBody * Object::GetRigidBody() {return rigidBody;}
+glm::mat4 & Object::getModel() {return model;}
+glm::vec3 & Object::getKa() {return ka;}
+glm::vec3 & Object::getKd() {return kd;}
+glm::vec3 & Object::getKs() {return ks;}
+float & Object::getShininess() {return shininess;}
+GLuint Object::getTexture() const {return tex;}
+btRigidBody * Object::getRigidBody() {return rigidBody;}
 
-void Object::Render() {
+void Object::render() {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
@@ -102,5 +104,32 @@ void Object::Render() {
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(2);
+}
+
+std::pair<float, glm::vec3> Object::intersect(glm::vec3 start, glm::vec3 ray) const {
+    float lambda = 0;
+    glm::vec3 p0 = start;
+    for(int i = 0; i < indices->size()/3; ++i) {
+        glm::vec3 p1 = vertices->at(indices->at(i*3+0)).position;
+        glm::vec3 p2 = vertices->at(indices->at(i*3+1)).position;
+        glm::vec3 p3 = vertices->at(indices->at(i*3+2)).position;
+        p1 = (glm::vec3)(model*glm::vec4(p1, 1));
+        p2 = (glm::vec3)(model*glm::vec4(p2, 1));
+        p3 = (glm::vec3)(model*glm::vec4(p3, 1));
+        
+        glm::vec3 n = glm::normalize(glm::cross(p3-p1, p2-p1));
+        glm::vec3 d1 = glm::cross(p3-p2, n);
+        glm::vec3 d2 = glm::cross(p1-p3, n);
+        glm::vec3 d3 = glm::cross(p2-p1, n);
+        if(glm::dot(n, ray) > 0) {n *= -1;}
+        
+        glm::vec3 testP0;
+        float testLambda = (glm::dot(n, p1)-glm::dot(n, start))/glm::dot(n, ray);
+        if(!std::isinf(testLambda) && testLambda > 0 && (testLambda < lambda || lambda == 0)) {
+            testP0 =  testLambda*ray + start;
+            if(glm::dot(d1, testP0-p3) >= 0 && glm::dot(d2, testP0-p1) >= 0 && glm::dot(d3, testP0-p2) >= 0) {p0 = testP0; lambda = testLambda;}
+        }
+    }
+    return std::pair<float, glm::vec3>(lambda, p0);
 }
 

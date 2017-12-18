@@ -1,10 +1,10 @@
-# PA11 Final: Graphics Simulator
+# PA11 Final: Computer Graphics Simulator
 
 Nikita Ignatyk and Roniel Padua
 
 # Description
 
-All files present are for the final project, Graphics Simulator
+All files present are for the final project, Computer Graphics Simulator
 
 # Building
 
@@ -28,11 +28,11 @@ Type and  run "./start.sh" in the terminal
 
 Running the project requires no command line arguments, nor does it give out a prompt.
 
-Simply type in "./GS" if in the build directory, or "build/GS" if right outside the build directory.
+Simply type in "./cgs" if in the build directory, or "build/cgs" if right outside the build directory.
 
 # Libraries
 
-GLM, GLEW, SDL, Assimp, devIL and Bullet are required libraries.
+GLM, GLEW, SDL, Assimp, devIL, Bullet and freetype are required libraries.
 
 Running start.sh will make sure they are installed, and if they are not, will prompt for sudo password to install them.
 
@@ -40,10 +40,16 @@ Running start.sh will make sure they are installed, and if they are not, will pr
 
 ## Keyboard
 
-PENDING
+WASD = movement
+QE = peek
+F = flashlight
+L = fragment/vertex lighting
+T = throw ball!
 
 ## Mouse
 
-PENDING
+motion = look around
+LEFT = activate
+RIGHT = (un)free mouse
 
 

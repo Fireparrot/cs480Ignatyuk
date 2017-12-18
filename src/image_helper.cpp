@@ -33,14 +33,7 @@ GLuint ImageHelper::loadTexture(const std::string filename, ILuint * imagePtr) c
     
     GLuint tex;
     glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-            ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT), 0, (ilGetInteger(IL_IMAGE_BYTES_PER_PIXEL) == 3 ? GL_RGB : GL_RGBA), GL_UNSIGNED_BYTE, ilGetData());
-    glBindTexture(GL_TEXTURE_2D, 0);
+    loadTexture(tex);
     
     
     if(imagePtr) {
@@ -128,7 +121,7 @@ void ImageHelper::setHorAdjust(int adj) {horAdjust = adj < 0 ? -1 : adj > 0 ? 1 
 void ImageHelper::setVerAdjust(int adj) {verAdjust = adj < 0 ? -1 : adj > 0 ? 1 : 0;}
 void ImageHelper::setUsePadding(bool b) {usePadding = b;}
 
-GLuint ImageHelper::rasterizeText(const std::string text, ILuint * imagePtr) {
+GLuint ImageHelper::rasterizeText(const std::string text, ILuint * imagePtr) const {
     if(fontName == "") {
         std::cout << "No font loaded!" << std::endl;
         return 0;
@@ -202,16 +195,8 @@ GLuint ImageHelper::rasterizeText(const std::string text, ILuint * imagePtr) {
     
     GLuint tex;
     glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-            ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT), 0, (ilGetInteger(IL_IMAGE_BYTES_PER_PIXEL) == 3 ? GL_RGB : GL_RGBA), GL_UNSIGNED_BYTE, ilGetData());
-    glBindTexture(GL_TEXTURE_2D, 0);
+    loadTexture(tex);
     
-    ilSave(IL_PNG, "test.png");
     ilBindImage(0);
     if(imagePtr) {
         *imagePtr = image;
@@ -221,7 +206,7 @@ GLuint ImageHelper::rasterizeText(const std::string text, ILuint * imagePtr) {
     
     return tex;
 }
-GLuint ImageHelper::rasterizeText(const std::wstring text, ILuint * imagePtr) {
+GLuint ImageHelper::rasterizeText(const std::wstring text, ILuint * imagePtr) const {
     if(fontName == "") {
         std::cout << "No font loaded!" << std::endl;
         return 0;
@@ -318,17 +303,8 @@ GLuint ImageHelper::rasterizeText(const std::wstring text, ILuint * imagePtr) {
     
     GLuint tex;
     glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-            ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT), 0, (ilGetInteger(IL_IMAGE_BYTES_PER_PIXEL) == 3 ? GL_RGB : GL_RGBA), GL_UNSIGNED_BYTE, ilGetData());
-    glBindTexture(GL_TEXTURE_2D, 0);
+    loadTexture(tex);
     
-    ilSave(IL_PNG, "test.png");
-    ilBindImage(0);
     if(imagePtr) {
         *imagePtr = image;
     } else {
@@ -336,5 +312,68 @@ GLuint ImageHelper::rasterizeText(const std::wstring text, ILuint * imagePtr) {
     }
     
     return tex;
+}
+
+void ImageHelper::loadTexture(GLuint tex, ILuint * imagePtr) const {
+    if(imagePtr) {ilBindImage(*imagePtr);}
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+            ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT), 0,
+            (ilGetInteger(IL_IMAGE_BYTES_PER_PIXEL) == 3 ? GL_RGB : GL_RGBA), GL_UNSIGNED_BYTE,
+            ilGetData());
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void ImageHelper::paint(glm::vec4 color, glm::vec2 pos, float radius, ILuint * imagePtr, bool scaleHorizontally) {
+    ilBindImage(*imagePtr);
+    ILubyte * data = ilGetData();
+    int width = ilGetInteger(IL_IMAGE_WIDTH);
+    int height = ilGetInteger(IL_IMAGE_HEIGHT);
+    float scale = scaleHorizontally ? width : height;
+    for(int x = std::max(0, (int)(pos.x*width-radius*scale)); x <= std::min(width-1, (int)(pos.x*width+radius*scale)); ++x) {
+        for(int y = std::max(0, (int)(pos.y*height-radius*scale)); y <= std::min(height-1, (int)(pos.y*height+radius*scale)); ++y) {
+            if((x-pos.x*width)*(x-pos.x*width) + (y-pos.y*height)*(y-pos.y*height) <= radius*radius*scale*scale) {
+                data[4*y*width + 4*x + 0] = 255*color.r;
+                data[4*y*width + 4*x + 1] = 255*color.g;
+                data[4*y*width + 4*x + 2] = 255*color.b;
+                data[4*y*width + 4*x + 3] = 255*color.a;
+            }
+        }
+    }
+}
+void ImageHelper::paint(glm::vec4 color, glm::vec2 start, glm::vec2 end, float radius, ILuint * imagePtr, bool scaleHorizontally) {
+    ilBindImage(*imagePtr);
+    ILubyte * data = ilGetData();
+    int width = ilGetInteger(IL_IMAGE_WIDTH);
+    int height = ilGetInteger(IL_IMAGE_HEIGHT);
+    float scale = scaleHorizontally ? width : height;
+    
+    glm::vec2 size{width, height};
+    start *= size;
+    end *= size;
+    radius *= scale;
+    
+    for(int x = std::max(0, (int)(std::min(start.x, end.x)-radius)); x <= std::min(width-1, (int)(std::max(start.x, end.x)+radius)); ++x) {
+        for(int y = std::max(0, (int)(std::min(start.y, end.y)-radius)); y <= std::min(height-1, (int)(std::max(start.y, end.y)+radius)); ++y) {
+            glm::vec2 point{x, y};
+            bool circle0 = (x-start.x)*(x-start.x) + (y-start.y)*(y-start.y) <= radius*radius;
+            bool circle1 = (x-  end.x)*(x-  end.x) + (y-  end.y)*(y-  end.y) <= radius*radius;
+            bool rectangle = false;
+            if(start != end) {
+                glm::vec2 norm = glm::normalize(glm::vec2{start.y-end.y, end.x-start.x});
+                rectangle = abs(glm::dot(point-start, norm)) <= radius && glm::dot(end-start, point-start) >= 0 && glm::dot(end-start, point-end) <= 0;
+            }
+            if(circle0 || circle1 || rectangle) {
+                data[4*y*width + 4*x + 0] = 255*color.r;
+                data[4*y*width + 4*x + 1] = 255*color.g;
+                data[4*y*width + 4*x + 2] = 255*color.b;
+                data[4*y*width + 4*x + 3] = 255*color.a;
+            }
+        }
+    }
 }
 
